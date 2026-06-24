@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GEMINI_MODELS, IMAGE_ENGINE_CONFIG, PLATFORM_SPECS } from './config';
-import type { GeminiModel, ImageType, InfographicStyle, PhotoStyle, PlatformSpec, ClientTier } from './types';
+import type { GeminiModel, ImageType, PlatformSpec, ClientTier } from './types';
 import { PRO_REQUIRED_TYPES as proTypes } from './config';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -9,8 +9,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export function selectGeminiModel(
   imageType: ImageType,
-  clientTier: ClientTier,
-  subStyle?: InfographicStyle | PhotoStyle
+  clientTier: ClientTier
 ): GeminiModel {
   // Premium/agency tiers always get Pro
   if (clientTier === 'premium' || clientTier === 'agency') return 'nano_banana_pro';
@@ -42,7 +41,10 @@ export async function generateWithGemini(
     try {
       const model = genAI.getGenerativeModel({ model: modelId });
 
-      const parts: any[] = [{ text: imagePrompt }];
+      const parts: Array<
+        | { text: string }
+        | { inlineData: { mimeType: string; data: string } }
+      > = [{ text: imagePrompt }];
 
       // Add reference images if provided
       if (options.referenceImages?.length) {
@@ -79,8 +81,9 @@ export async function generateWithGemini(
       }
 
       throw new Error('No image data in Gemini response');
-    } catch (err: any) {
-      console.error(`[Gemini] Attempt ${attempt}/${maxRetries} failed:`, err?.message ?? err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[Gemini] Attempt ${attempt}/${maxRetries} failed:`, message);
       if (attempt === maxRetries) throw err;
       await new Promise((r) => setTimeout(r, 1000 * attempt));
     }

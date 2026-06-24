@@ -17,7 +17,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What happens after my free trial?',
-    a: 'You keep your generated content. Upgrade to continue creating new posts and presentations.',
+    a: 'You keep your generated content. Upgrade to continue creating new posts and landing pages.',
   },
   {
     q: 'Do you offer annual billing?',
@@ -25,7 +25,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What social platforms are supported?',
-    a: 'Instagram, Facebook, LinkedIn, Twitter/X, TikTok, and Pinterest.',
+    a: 'Instagram, Facebook, LinkedIn, X (Twitter), and Google Business.',
   },
   {
     q: 'Can I upgrade or downgrade?',

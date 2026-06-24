@@ -52,7 +52,7 @@ export function ClientAddonsManager({ clientId }: { clientId: string }) {
   }, [clientId]);
 
   useEffect(() => {
-    fetchData();
+    void Promise.resolve().then(() => { void fetchData(); });
   }, [fetchData]);
 
   const toggle = async (addonKey: string, currentlyActive: boolean) => {

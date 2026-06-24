@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateJSON, DEFAULT_MODEL } from '@/lib/openrouter'
+import type { BrandStrategyPlan } from '@/lib/brand-strategy'
+
+type Strategy = Omit<BrandStrategyPlan, 'clientId'>
 
 interface ContentGenRequest {
   clientId: string
   businessName: string
-  strategy: any
+  strategy: Strategy
   type: 'all' | 'whitepaper' | 'articles' | 'tweets' | 'infographics' | 'case_studies' | 'emails' | 'podcasts'
 }
 
@@ -52,7 +55,7 @@ export async function POST(request: NextRequest) {
         const contentSet = await generateMonthlyContent({
           clientId: client.id,
           businessName: client.business_name,
-          strategy: bp.brand_strategy,
+          strategy: bp.brand_strategy as unknown as Strategy,
           type: 'all',
         })
 
@@ -94,10 +97,10 @@ export async function POST(request: NextRequest) {
 /**
  * Generate all content types for a client
  */
-async function generateMonthlyContent(req: ContentGenRequest): Promise<Record<string, any>> {
-  const { clientId, businessName, strategy, type } = req
+async function generateMonthlyContent(req: ContentGenRequest): Promise<Record<string, unknown>> {
+  const { businessName, strategy, type } = req
 
-  const contentSet: Record<string, any> = {}
+  const contentSet: Record<string, unknown> = {}
 
   // Parallel generation for efficiency
   const promises = []
@@ -164,7 +167,7 @@ async function generateMonthlyContent(req: ContentGenRequest): Promise<Record<st
 
 // ─── Content Generation Functions ────────────────────────────────────────────
 
-async function generateWhitepaper(businessName: string, strategy: any): Promise<any> {
+async function generateWhitepaper(businessName: string, strategy: Strategy): Promise<unknown> {
   const prompt = `You are a professional business writer. Create an 8-10 page industry whitepaper for ${businessName}.
 
 Business: ${strategy.businessOverview.whatYouDo}
@@ -196,7 +199,7 @@ Return JSON:
   })
 }
 
-async function generateArticles(businessName: string, strategy: any): Promise<any[]> {
+async function generateArticles(businessName: string, strategy: Strategy): Promise<unknown[]> {
   const prompt = `Create 5 LinkedIn articles for ${businessName}. Each should be 1000-1500 words.
 
 Content Pillars: ${strategy.contentStrategy.pillars.join(', ')}
@@ -221,7 +224,7 @@ Return a JSON array of 5 articles.`
   })
 }
 
-async function generateTweets(businessName: string, strategy: any): Promise<any[]> {
+async function generateTweets(businessName: string, strategy: Strategy): Promise<unknown[]> {
   const prompt = `Create 20 tweet threads for ${businessName}. Each thread should have 5-10 connected tweets.
 
 Topics: ${strategy.contentStrategy.pillars.join(', ')}
@@ -242,7 +245,7 @@ Return JSON array where each item is:
   })
 }
 
-async function generateInfographicPrompts(businessName: string, strategy: any): Promise<any[]> {
+async function generateInfographicPrompts(businessName: string, strategy: Strategy): Promise<unknown[]> {
   const prompt = `Create 8 infographic/data visualization prompts for ${businessName}.
 
 Each should be a detailed prompt for Gemini image generation that creates professional data visualizations, charts, or infographics.
@@ -267,7 +270,7 @@ Return JSON array:
   })
 }
 
-async function generateCaseStudies(businessName: string, strategy: any): Promise<any[]> {
+async function generateCaseStudies(businessName: string, strategy: Strategy): Promise<unknown[]> {
   const prompt = `Create 4 case studies for ${businessName}. These should be fictional but realistic examples.
 
 Company: ${businessName}
@@ -295,7 +298,7 @@ Each case study:
   })
 }
 
-async function generateEmailSequences(businessName: string, strategy: any): Promise<any[]> {
+async function generateEmailSequences(businessName: string, strategy: Strategy): Promise<unknown[]> {
   const prompt = `Create 3 email sequences for ${businessName}. Each sequence has 5 emails.
 
 Topics: ${strategy.contentStrategy.pillars.join(', ')}
@@ -324,7 +327,7 @@ Return:
   })
 }
 
-async function generatePodcastScripts(businessName: string, strategy: any): Promise<any[]> {
+async function generatePodcastScripts(businessName: string, strategy: Strategy): Promise<unknown[]> {
   const prompt = `Create 2 podcast episode scripts for ${businessName}. Each 45-60 minutes.
 
 Topics: ${strategy.contentStrategy.pillars.join(', ')}

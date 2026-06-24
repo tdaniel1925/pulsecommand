@@ -104,7 +104,7 @@ async function fetchStripeData(): Promise<{ data: StripeData; error: boolean }> 
 
   try {
     const Stripe = (await import("stripe")).default;
-    const stripe = new Stripe(key, { apiVersion: "2026-04-22.dahlia" as any });
+    const stripe = new Stripe(key, { apiVersion: "2026-04-22.dahlia" });
 
     const [activeSubs, pastDueSubs] = await Promise.all([
       stripe.subscriptions.list({ limit: 100, status: "active" }),

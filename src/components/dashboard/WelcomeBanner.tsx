@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function WelcomeBanner() {
-  const [show, setShow] = useState(false);
+  const [show] = useState(
+    () => typeof window !== "undefined" && window.location.search.includes("welcome=1")
+  );
   const [dismissed, setDismissed] = useState(false);
-
-  useEffect(() => {
-    if (window.location.search.includes("welcome=1")) {
-      setShow(true);
-    }
-  }, []);
 
   const dismiss = () => {
     setDismissed(true);

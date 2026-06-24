@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check, Zap, Heart, BarChart3, Users, Star, Quote } from "lucide-react";
+import { ArrowRight, Zap, Heart, BarChart3, Users, Star, Quote } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -29,7 +29,7 @@ const timeline = [
   {
     year: "Today",
     title: "BundledContent is Born",
-    desc: "The result is BundledContent — a complete, all-in-one social media and online content development firm built specifically for companies who want full-service agency results at DIY-friendly pricing. One monthly subscription. Every channel covered. Real strategy behind every post.",
+    desc: "The result is BundledContent — AI that writes your social posts, designs a custom image for each one, and auto-publishes across every platform, plus AI-built landing pages on your own URL. One monthly subscription. Every channel covered. Real strategy behind every post.",
   },
 ];
 
@@ -38,13 +38,13 @@ const values = [
     icon: <Zap className="w-5 h-5 text-accent-500" />,
     bg: "bg-accent-50",
     title: "Speed Without Sacrifice",
-    desc: "We built systems that deliver content at scale without cutting corners on quality. Every post, episode, and video is reviewed before it goes out.",
+    desc: "We built systems that deliver content at scale without cutting corners on quality. Every post and image is crafted for your brand before it goes out.",
   },
   {
     icon: <BarChart3 className="w-5 h-5 text-primary-600" />,
     bg: "bg-primary-50",
-    title: "Results You Can Measure",
-    desc: "We're obsessed with data. Every client gets a monthly performance report — not just output, but outcomes. Reach, engagement, leads.",
+    title: "Built to Convert",
+    desc: "We're obsessed with output that performs. Posts written for each platform, images that stop the scroll, and landing pages designed to turn visitors into leads.",
   },
   {
     icon: <Heart className="w-5 h-5 text-rose-500" />,
@@ -91,7 +91,7 @@ export default function AboutPage() {
               </span>
             </h1>
             <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
-              BundledContent is a complete, all-in-one social media and online content development firm — built for companies who want full-service agency results at DIY-friendly pricing. Behind it is a husband and wife team with decades of broadcast, brand, and marketing experience who figured out how to make AI content creation work at real scale.
+              BundledContent is AI social media on autopilot — posts, custom images, and auto-publishing across every platform, plus AI-built landing pages on your own URL. Behind it is a husband and wife team with decades of broadcast, brand, and marketing experience who figured out how to make AI content creation work at real scale.
             </p>
           </div>
 
@@ -148,7 +148,7 @@ export default function AboutPage() {
               </div>
               <div className="p-6">
                 <p className="text-neutral-600 text-sm leading-relaxed">
-                  A former marketing manager for several major online brands and a sales executive at <span className="font-semibold text-neutral-800">Greystar</span> — one of the world's largest real estate companies — Sella brings elite-level brand strategy and sales intelligence to every BundledContent campaign. She ensures the content doesn't just look good. It converts.
+                  A former marketing manager for several major online brands and a sales executive at <span className="font-semibold text-neutral-800">Greystar</span> — one of the world&apos;s largest real estate companies — Sella brings elite-level brand strategy and sales intelligence to every BundledContent campaign. She ensures the content doesn&apos;t just look good. It converts.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-4">
                   {["Brand Strategy", "Sales Leadership", "Online Marketing", "Client Growth"].map(tag => (
@@ -188,7 +188,7 @@ export default function AboutPage() {
             <div className="absolute left-8 top-0 bottom-0 w-px bg-neutral-200 hidden md:block" />
 
             <div className="space-y-10">
-              {timeline.map((item, i) => (
+              {timeline.map((item) => (
                 <div key={item.year} className="relative md:pl-24">
                   {/* Year bubble */}
                   <div className="hidden md:flex absolute left-0 w-16 h-16 rounded-2xl bg-white border-2 border-primary-200 items-center justify-center shadow-sm">
@@ -271,7 +271,7 @@ export default function AboutPage() {
           <p className="text-2xl font-semibold text-neutral-800 italic max-w-2xl mx-auto mb-6">
             &ldquo;Working with Trent and Sella feels like having a full marketing team in your corner — at a fraction of the cost. They actually care about your brand.&rdquo;
           </p>
-          <p className="text-neutral-500 font-medium">— James T., Business Owner · Full Plan client since 2024</p>
+          <p className="text-neutral-500 font-medium">— James T., Business Owner · Growth plan client since 2024</p>
         </div>
       </section>
 

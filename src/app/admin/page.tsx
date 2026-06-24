@@ -97,7 +97,7 @@ export default async function AdminDashboardPage() {
     }
   }
 
-  const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;
+  const fourteenDaysAgo = new Date().getTime() - 14 * 24 * 60 * 60 * 1000;
 
   const needsAttention = clients
     .filter((c) => {

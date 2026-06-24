@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { transformAnalysisToStrategy, generateStrategyHTML } from '@/lib/brand-strategy'
+import { transformAnalysisToStrategy, generateStrategyHTML, type BrandAnalysis } from '@/lib/brand-strategy'
 import { sendStrategyEmail } from '@/lib/email'
 
 interface GenerateStrategyBody {
   clientId: string
-  analysis: any
+  analysis: BrandAnalysis
 }
 
 export async function POST(request: NextRequest) {

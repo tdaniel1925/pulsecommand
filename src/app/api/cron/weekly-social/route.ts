@@ -37,8 +37,8 @@ export async function GET(req: NextRequest) {
         failed++;
         errors.push(`${client.business_name}: ${result.error}`);
       }
-    } catch (err: any) {
-      const msg = err?.message ?? String(err);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
       console.error(`[weekly-social] ✗ ${client.business_name}:`, msg);
       errors.push(`${client.business_name}: ${msg}`);
       failed++;

@@ -33,6 +33,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const body = await request.json()
 
     // Strip read-only fields from update payload
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _id, created_at, user_id, ...updateFields } = body
 
     if (Object.keys(updateFields).length === 0) {

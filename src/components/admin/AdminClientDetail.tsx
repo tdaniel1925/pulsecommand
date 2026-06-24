@@ -6,8 +6,6 @@ import {
   ArrowLeft,
   ExternalLink,
   CheckCircle,
-  Clock,
-  Calendar,
   XCircle,
   FileText,
   Film,
@@ -115,9 +113,9 @@ const STATUS_BADGE: Record<string, string> = {
 
 const PLAN_BADGE: Record<string, string> = {
   free: "bg-neutral-100 text-neutral-600",
-  starter: "bg-blue-100 text-blue-700",
-  growth: "bg-indigo-100 text-indigo-700",
-  agency: "bg-purple-100 text-purple-700",
+  lite: "bg-blue-100 text-blue-700",
+  full: "bg-indigo-100 text-indigo-700",
+  premium: "bg-purple-100 text-purple-700",
 };
 
 const POST_STATUS_BADGE: Record<string, string> = {

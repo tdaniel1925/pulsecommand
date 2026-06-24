@@ -191,7 +191,7 @@ export type PostModalData = {
   status: string;
   scheduled_at: string | null;
   published_at: string | null;
-  metadata?: any;
+  metadata?: { captions?: Record<string, string> } | null;
 };
 
 interface PostModalProps {
@@ -204,19 +204,20 @@ interface PostModalProps {
 export function PostModal({ post, onClose }: PostModalProps) {
   const [activeTab, setActiveTab] = useState<string>("");
 
+  // Reset the active tab to the first platform whenever the post changes.
+  // Adjusting state during render avoids the extra render an effect would cause.
+  const [lastPostId, setLastPostId] = useState<string | null>(null);
+  if (post && post.id !== lastPostId) {
+    setLastPostId(post.id);
+    setActiveTab(post.platforms?.length ? post.platforms[0] : "");
+  }
+
   useEffect(() => {
     if (!post) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [post, onClose]);
-
-  // Set default tab when post changes
-  useEffect(() => {
-    if (post?.platforms?.length) {
-      setActiveTab(post.platforms[0]);
-    }
-  }, [post]);
 
   if (!post) return null;
 
@@ -228,7 +229,6 @@ export function PostModal({ post, onClose }: PostModalProps) {
 
   const platforms = Array.isArray(post.platforms) ? post.platforms : [];
   const captions: Record<string, string> = post.metadata?.captions ?? {};
-  const activePlatform = PLATFORMS.find((p) => p.id === activeTab);
   const activeCaption = captions[activeTab] || post.content || "";
 
   function renderFrame() {

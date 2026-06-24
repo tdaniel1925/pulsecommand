@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 export default async function PipelinePage() {
   const admin = createAdminClient()
 
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const thirtyDaysAgo = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
   const [{ data: posts }, { data: clients }] = await Promise.all([
     admin

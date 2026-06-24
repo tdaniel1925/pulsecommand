@@ -66,8 +66,9 @@ export async function POST(request: NextRequest) {
               platforms: Array.isArray(post.platforms) ? post.platforms : [],
             }).catch((e: Error) => console.error('[approve] email failed:', e.message))
           }
-        } catch (emailErr: any) {
-          console.error('[approve] email lookup failed:', emailErr.message)
+        } catch (emailErr: unknown) {
+          const msg = emailErr instanceof Error ? emailErr.message : String(emailErr)
+          console.error('[approve] email lookup failed:', msg)
         }
 
         // Publish to Ayrshare (fire and forget)

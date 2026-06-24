@@ -99,7 +99,7 @@ export default async function PagesPage() {
                   </a>
                 )}
                 {status === "deploying" && (
-                  <p className="text-xs text-yellow-600">Deploying to Vercel — check back in a few minutes.</p>
+                  <p className="text-xs text-yellow-600">Publishing — refresh in a moment.</p>
                 )}
                 {status === "draft" && (
                   <button className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-700 border border-neutral-200 hover:bg-neutral-50 px-3 py-1.5 rounded-lg transition-colors">
@@ -115,7 +115,7 @@ export default async function PagesPage() {
         <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-12 text-center">
           <Globe className="w-10 h-10 text-neutral-200 mx-auto mb-3" />
           <p className="font-medium text-neutral-700">No landing pages yet</p>
-          <p className="text-sm text-neutral-400 mt-1">Your first page will be live within 48 hours of onboarding.</p>
+          <p className="text-sm text-neutral-400 mt-1">Create a landing page and it publishes instantly to your own link.</p>
         </div>
       )}
 

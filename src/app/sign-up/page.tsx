@@ -1,36 +1,45 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import { Check, User, Mail, Building2, Shield, Zap, Share2, Mic, Video, BarChart3, AlertCircle, Phone } from "lucide-react";
+import { Check, User, Mail, Building2, Shield, Zap, Share2, Image as ImageIcon, Globe, Rocket, AlertCircle, Phone } from "lucide-react";
 import OnboardingNav from "@/components/OnboardingNav";
 
 const plans = {
-  lite: {
-    name: "BundledContent Lite",
-    price: 745,
-    displayPrice: "$99",
-    priceNum: 99,
-    tagline: "Perfect to get started",
+  starter: {
+    name: "Starter",
+    displayPrice: "$149",
+    tagline: "For solo operators getting consistent online",
     items: [
       { icon: <Share2 className="w-4 h-4 text-primary-500" />, text: "30 social posts/month" },
-      { icon: <Mic className="w-4 h-4 text-purple-500" />, text: "1 podcast episode/month" },
-      { icon: <Video className="w-4 h-4 text-rose-500" />, text: "1 AI presenter video/month" },
-      { icon: <Check className="w-4 h-4 text-green-500" />, text: "3 platforms" },
+      { icon: <ImageIcon className="w-4 h-4 text-purple-500" />, text: "AI image with every post" },
+      { icon: <Zap className="w-4 h-4 text-amber-500" />, text: "Auto-publish to connected accounts" },
+      { icon: <Globe className="w-4 h-4 text-teal-500" />, text: "1 landing page" },
     ],
   },
-  full: {
-    name: "BundledContent Full",
-    displayPrice: "$745",
-    priceNum: 745,
-    tagline: "Complete AI marketing machine",
+  growth: {
+    name: "Growth",
+    displayPrice: "$399",
+    tagline: "The agency replacement for growing businesses",
     items: [
-      { icon: <Share2 className="w-4 h-4 text-primary-400" />, text: "150 social posts/month · 5 channels" },
-      { icon: <Mic className="w-4 h-4 text-purple-400" />, text: "Bi-weekly podcast · 26 eps/year" },
-      { icon: <Video className="w-4 h-4 text-rose-400" />, text: "4 AI presenter videos/month" },
-      { icon: <BarChart3 className="w-4 h-4 text-teal-400" />, text: "Monthly performance report" },
+      { icon: <Share2 className="w-4 h-4 text-primary-400" />, text: "100 social posts/month" },
+      { icon: <ImageIcon className="w-4 h-4 text-purple-400" />, text: "AI image with every post" },
+      { icon: <Zap className="w-4 h-4 text-amber-400" />, text: "Auto-publish across all platforms" },
+      { icon: <Globe className="w-4 h-4 text-teal-400" />, text: "3 landing pages" },
+      { icon: <Rocket className="w-4 h-4 text-rose-400" />, text: "Priority generation" },
+    ],
+  },
+  pro: {
+    name: "Pro",
+    displayPrice: "$749",
+    tagline: "High-volume content for established brands",
+    items: [
+      { icon: <Share2 className="w-4 h-4 text-primary-500" />, text: "300 social posts/month" },
+      { icon: <ImageIcon className="w-4 h-4 text-purple-500" />, text: "AI image with every post" },
+      { icon: <Zap className="w-4 h-4 text-amber-500" />, text: "Auto-publish across all platforms" },
+      { icon: <Globe className="w-4 h-4 text-teal-500" />, text: "Unlimited landing pages" },
+      { icon: <Rocket className="w-4 h-4 text-rose-500" />, text: "Priority generation" },
     ],
   },
 };
@@ -40,24 +49,22 @@ const inputWithIconClass = "w-full pl-11 pr-4 py-3 bg-neutral-50 border border-n
 
 function SignUpForm() {
   const searchParams = useSearchParams();
-  const planKey = (searchParams.get("plan") === "lite" ? "lite" : "full") as "lite" | "full";
+  const planParam = searchParams.get("plan");
+  const planKey = (planParam === "starter" || planParam === "pro" ? planParam : "growth") as "starter" | "growth" | "pro";
   const plan = plans[planKey];
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState(searchParams.get("email") ?? "");
+  const [email, setEmail] = useState(() => {
+    const e = searchParams.get("email");
+    return e ? decodeURIComponent(e) : "";
+  });
   const [businessName, setBusinessName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Pre-fill email from demo redirect
-  useEffect(() => {
-    const e = searchParams.get("email");
-    if (e) setEmail(decodeURIComponent(e));
-  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -103,14 +110,14 @@ function SignUpForm() {
           </div>
 
           {/* Plan toggle */}
-          <div className="max-w-sm mx-auto mb-8">
+          <div className="max-w-md mx-auto mb-8">
             <div className="flex rounded-xl border border-neutral-200 bg-white p-1 gap-1">
-              {(["lite", "full"] as const).map(p => (
+              {(["starter", "growth", "pro"] as const).map(p => (
                 <Link key={p} href={`/sign-up?plan=${p}${email ? `&email=${encodeURIComponent(email)}` : ""}`}
                   className={`flex-1 py-2 rounded-lg text-sm font-semibold text-center transition-colors ${
                     planKey === p ? "bg-neutral-900 text-white" : "text-neutral-500 hover:text-neutral-700"
                   }`}>
-                  {p === "lite" ? "Lite — $99/mo" : "Full — $745/mo"}
+                  {plans[p].name} — {plans[p].displayPrice}/mo
                 </Link>
               ))}
             </div>
@@ -208,64 +215,66 @@ function SignUpForm() {
 
               {/* Right: Order Summary */}
               <div className="space-y-5">
-                <div className={`rounded-2xl p-6 sticky top-24 ${planKey === "full" ? "bg-neutral-900 text-white" : "bg-white border-2 border-neutral-200"}`}>
+                <div className={`rounded-2xl p-6 sticky top-24 ${planKey === "growth" ? "bg-neutral-900 text-white" : "bg-white border-2 border-neutral-200"}`}>
                   <div className="flex items-center gap-3 mb-5">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${planKey === "full" ? "bg-primary-600" : "bg-neutral-100"}`}>
-                      <Zap className={`w-5 h-5 ${planKey === "full" ? "text-white" : "text-neutral-600"}`} />
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${planKey === "growth" ? "bg-primary-600" : "bg-neutral-100"}`}>
+                      <Zap className={`w-5 h-5 ${planKey === "growth" ? "text-white" : "text-neutral-600"}`} />
                     </div>
                     <div>
-                      <p className={`font-bold text-sm ${planKey === "full" ? "text-white" : "text-neutral-900"}`}>{plan.name}</p>
-                      <p className={`text-xs ${planKey === "full" ? "text-neutral-400" : "text-neutral-500"}`}>{plan.tagline}</p>
+                      <p className={`font-bold text-sm ${planKey === "growth" ? "text-white" : "text-neutral-900"}`}>{plan.name}</p>
+                      <p className={`text-xs ${planKey === "growth" ? "text-neutral-400" : "text-neutral-500"}`}>{plan.tagline}</p>
                     </div>
                   </div>
 
-                  <div className={`mb-5 pb-5 border-b ${planKey === "full" ? "border-neutral-800" : "border-neutral-200"}`}>
+                  <div className={`mb-5 pb-5 border-b ${planKey === "growth" ? "border-neutral-800" : "border-neutral-200"}`}>
                     <div className="flex items-end justify-between">
                       <div>
-                        <span className={`text-4xl font-bold ${planKey === "full" ? "text-white" : "text-neutral-900"}`}>{plan.displayPrice}</span>
-                        <span className={`${planKey === "full" ? "text-neutral-400" : "text-neutral-500"}`}>/mo</span>
+                        <span className={`text-4xl font-bold ${planKey === "growth" ? "text-white" : "text-neutral-900"}`}>{plan.displayPrice}</span>
+                        <span className={`${planKey === "growth" ? "text-neutral-400" : "text-neutral-500"}`}>/mo</span>
                       </div>
                       <span className="text-xs text-green-400 font-medium bg-green-400/10 px-2 py-1 rounded-full">No lock-in</span>
                     </div>
-                    <p className={`text-xs mt-1 ${planKey === "full" ? "text-neutral-500" : "text-neutral-400"}`}>First charge after 14-day free trial</p>
+                    <p className={`text-xs mt-1 ${planKey === "growth" ? "text-neutral-500" : "text-neutral-400"}`}>First charge after 14-day free trial</p>
                   </div>
 
                   <div className="space-y-3 mb-5">
                     {plan.items.map(({ icon, text }) => (
                       <div key={text} className="flex items-start gap-3">
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${planKey === "full" ? "bg-neutral-800" : "bg-neutral-50 border border-neutral-100"}`}>
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${planKey === "growth" ? "bg-neutral-800" : "bg-neutral-50 border border-neutral-100"}`}>
                           {icon}
                         </div>
-                        <span className={`text-xs leading-relaxed ${planKey === "full" ? "text-neutral-300" : "text-neutral-600"}`}>{text}</span>
+                        <span className={`text-xs leading-relaxed ${planKey === "growth" ? "text-neutral-300" : "text-neutral-600"}`}>{text}</span>
                       </div>
                     ))}
                   </div>
 
-                  <div className={`border-t pt-5 space-y-2 ${planKey === "full" ? "border-neutral-800" : "border-neutral-200"}`}>
-                    <div className={`flex justify-between text-sm ${planKey === "full" ? "text-neutral-400" : "text-neutral-500"}`}>
+                  <div className={`border-t pt-5 space-y-2 ${planKey === "growth" ? "border-neutral-800" : "border-neutral-200"}`}>
+                    <div className={`flex justify-between text-sm ${planKey === "growth" ? "text-neutral-400" : "text-neutral-500"}`}>
                       <span>14-day free trial</span>
                       <span className="text-green-400 font-medium">Free</span>
                     </div>
-                    <div className={`flex justify-between text-sm font-bold pt-2 border-t ${planKey === "full" ? "border-neutral-800 text-white" : "border-neutral-200 text-neutral-900"}`}>
+                    <div className={`flex justify-between text-sm font-bold pt-2 border-t ${planKey === "growth" ? "border-neutral-800 text-white" : "border-neutral-200 text-neutral-900"}`}>
                       <span>Due today</span>
                       <span>$0.00</span>
                     </div>
                   </div>
 
-                  <div className={`mt-5 pt-5 border-t space-y-2 ${planKey === "full" ? "border-neutral-800" : "border-neutral-200"}`}>
+                  <div className={`mt-5 pt-5 border-t space-y-2 ${planKey === "growth" ? "border-neutral-800" : "border-neutral-200"}`}>
                     {["14-day free trial included", "Cancel anytime, no fees", "Setup within 24 hours"].map(item => (
-                      <div key={item} className={`flex items-center gap-2 text-xs ${planKey === "full" ? "text-neutral-400" : "text-neutral-500"}`}>
+                      <div key={item} className={`flex items-center gap-2 text-xs ${planKey === "growth" ? "text-neutral-400" : "text-neutral-500"}`}>
                         <Check className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
                         {item}
                       </div>
                     ))}
                   </div>
 
-                  <div className={`mt-4 pt-4 border-t text-center ${planKey === "full" ? "border-neutral-800" : "border-neutral-200"}`}>
-                    <Link href={`/sign-up?plan=${planKey === "lite" ? "full" : "lite"}`}
-                      className={`text-xs hover:underline ${planKey === "full" ? "text-neutral-400 hover:text-neutral-200" : "text-primary-600"}`}>
-                      Switch to {planKey === "lite" ? "Full ($745/mo)" : "Lite ($99/mo)"} →
-                    </Link>
+                  <div className={`mt-4 pt-4 border-t flex flex-wrap items-center justify-center gap-x-3 gap-y-1 ${planKey === "growth" ? "border-neutral-800" : "border-neutral-200"}`}>
+                    {(["starter", "growth", "pro"] as const).filter(p => p !== planKey).map(p => (
+                      <Link key={p} href={`/sign-up?plan=${p}${email ? `&email=${encodeURIComponent(email)}` : ""}`}
+                        className={`text-xs hover:underline ${planKey === "growth" ? "text-neutral-400 hover:text-neutral-200" : "text-primary-600"}`}>
+                        Switch to {plans[p].name} ({plans[p].displayPrice}/mo) →
+                      </Link>
+                    ))}
                   </div>
                 </div>
               </div>

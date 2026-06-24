@@ -19,21 +19,34 @@ import {
   Layers,
 } from "lucide-react";
 
-const navItems = [
+// The app is focused on two products: SOCIAL POSTING and LANDING PAGES.
+// `enabled: false` hides an item from the nav without removing the route, so a
+// feature can be revived later by flipping the flag.
+// Hidden (out of current product scope — audio/video/newsletter/etc.):
+//   Presentations, Videos, Newsletter, Lead Magnets, Reports, Workflow, Audio, Add-ons
+const navItems: {
+  label: string
+  href: string
+  icon: typeof LayoutDashboard
+  exact?: boolean
+  enabled?: boolean
+}[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, exact: true },
   { label: "Social Posts", href: "/dashboard/social", icon: Share2 },
-  { label: "Presentations", href: "/dashboard/presentations", icon: Layers },
-  { label: "Videos", href: "/dashboard/videos", icon: Video },
-  { label: "Newsletter", href: "/dashboard/newsletter", icon: Mail },
-  { label: "Lead Magnets", href: "/dashboard/lead-magnet", icon: Magnet },
-  { label: "Reports", href: "/dashboard/report", icon: BarChart2 },
-  { label: "Workflow", href: "/dashboard/workflow", icon: Kanban },
-  { label: "Audio", href: "/dashboard/audio", icon: Mic },
   { label: "Landing Pages", href: "/dashboard/pages", icon: Globe },
+  { label: "Page Builder", href: "/studio/new", icon: Sparkles },
   { label: "Upload Content", href: "/dashboard/upload", icon: Upload },
-  { label: "Add-ons", href: "/dashboard/addons", icon: Sparkles },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
   { label: "Billing", href: "/dashboard/billing", icon: CreditCard },
+  // ── Out of scope (hidden) ───────────────────────────────────────────────
+  { label: "Presentations", href: "/dashboard/presentations", icon: Layers, enabled: false },
+  { label: "Videos", href: "/dashboard/videos", icon: Video, enabled: false },
+  { label: "Newsletter", href: "/dashboard/newsletter", icon: Mail, enabled: false },
+  { label: "Lead Magnets", href: "/dashboard/lead-magnet", icon: Magnet, enabled: false },
+  { label: "Reports", href: "/dashboard/report", icon: BarChart2, enabled: false },
+  { label: "Workflow", href: "/dashboard/workflow", icon: Kanban, enabled: false },
+  { label: "Audio", href: "/dashboard/audio", icon: Mic, enabled: false },
+  { label: "Add-ons", href: "/dashboard/addons", icon: Sparkles, enabled: false },
 ];
 
 export default function DashboardNav() {
@@ -46,7 +59,7 @@ export default function DashboardNav() {
 
   return (
     <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-      {navItems.map(({ label, href, icon: Icon, exact }) => {
+      {navItems.filter((item) => item.enabled !== false).map(({ label, href, icon: Icon, exact }) => {
         const active = isActive(href, exact);
         return (
           <Link

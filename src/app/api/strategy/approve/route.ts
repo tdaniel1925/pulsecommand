@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications'
+import { generateMonthlyPostsForClient } from '@/lib/generate-monthly-posts'
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,13 +62,14 @@ export async function POST(request: NextRequest) {
       link: '/dashboard/social',
     }).catch(() => {})
 
-    // Trigger content generation (fire and forget)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    fetch(`${baseUrl}/api/pipeline/generate-content`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientId: client.id, type: 'all' }),
-    }).catch(err => console.error('Content generation trigger failed:', err))
+    // Trigger content generation in-process (fire and forget)
+    try {
+      void generateMonthlyPostsForClient(client.id).catch(err =>
+        console.error('Content generation failed:', err)
+      )
+    } catch (err) {
+      console.error('Content generation trigger failed:', err)
+    }
 
     return NextResponse.json({
       success: true,

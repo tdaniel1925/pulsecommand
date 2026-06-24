@@ -5,7 +5,7 @@ import { COST_ESTIMATES, CLAUDE_COST_ESTIMATES, IMAGE_ENGINE_CONFIG } from './co
 import { createAdminClient } from '@/lib/supabase/admin';
 import type {
   PostContext, BrandContext, ImageGenerationResult,
-  ImageType, ClientTier, GeminiModel, LayoutTemplate, CompositionStyle,
+  ImageType, ClientTier, GeminiModel,
 } from './types';
 
 // ─── Supabase Storage Upload ─────────────────────────────────────────────────
@@ -124,8 +124,7 @@ export async function generateSocialPostImage(input: {
   // Step 3: Select model
   const geminiModel = selectGeminiModel(
     classification.primary_type,
-    input.clientTier,
-    subStyle
+    input.clientTier
   );
 
   // Step 4: Get platform dimensions

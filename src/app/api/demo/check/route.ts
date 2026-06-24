@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getClientIp, isDemoRateLimited } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,22 +23,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ existingDemoId: existing.id, status: existing.status })
     }
 
-    // Check IP rate limit — max 3 demos per IP per 24h
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      ?? request.headers.get('x-real-ip')
-      ?? 'unknown'
-
-    if (ip !== 'unknown') {
-      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-      const { count } = await admin
-        .from('demo_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('ip_address', ip)
-        .gte('created_at', since)
-
-      if ((count ?? 0) >= 3) {
-        return NextResponse.json({ rateLimited: true, existingDemoId: null })
-      }
+    // Check IP rate limit — shares logic with demo/start (max 3 demos per IP per 24h)
+    const ip = getClientIp(request)
+    if (await isDemoRateLimited(admin, ip)) {
+      return NextResponse.json({ rateLimited: true, existingDemoId: null })
     }
 
     return NextResponse.json({ existingDemoId: null })

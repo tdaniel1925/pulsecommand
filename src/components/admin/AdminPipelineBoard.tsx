@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 interface Post {
   id: string
@@ -13,7 +14,7 @@ interface Post {
   created_at: string
   scheduled_at: string | null
   published_at: string | null
-  metadata: Record<string, any> | null
+  metadata: Record<string, unknown> | null
 }
 
 interface Props {
@@ -229,8 +230,8 @@ export default function AdminPipelineBoard({
       removePostFromState(id)
       setSelectedPost(null)
       router.refresh()
-    } catch (e: any) {
-      alert('Failed: ' + e.message)
+    } catch (e: unknown) {
+      alert('Failed: ' + (e instanceof Error ? e.message : String(e)))
     }
   }, [router])
 
@@ -249,8 +250,8 @@ export default function AdminPipelineBoard({
       removePostFromState(id)
       setSelectedPost(null)
       router.refresh()
-    } catch (e: any) {
-      alert('Failed: ' + e.message)
+    } catch (e: unknown) {
+      alert('Failed: ' + (e instanceof Error ? e.message : String(e)))
     }
   }, [router])
 
@@ -484,9 +485,12 @@ export default function AdminPipelineBoard({
               )}
 
               {selectedPost.image_url && (
-                <img
+                <Image
                   src={selectedPost.image_url}
                   alt="Post image"
+                  width={512}
+                  height={256}
+                  unoptimized
                   className="w-full rounded-lg my-4 object-cover max-h-64"
                 />
               )}

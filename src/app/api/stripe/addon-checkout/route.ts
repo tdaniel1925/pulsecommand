@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-const getStripe = () => new Stripe(process.env.STRIPE_SECRET_KEY!)
+import { getStripe } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
+    const stripe = getStripe()
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
+    }
+
     const { addonKey, stripePriceId } = await request.json()
     if (!addonKey || !stripePriceId) {
       return NextResponse.json({ error: 'addonKey and stripePriceId required' }, { status: 400 })
@@ -24,8 +27,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!client) return NextResponse.json({ error: 'Client not found' }, { status: 404 })
-
-    const stripe = getStripe()
 
     // Get or create Stripe customer
     let customerId = client.stripe_customer_id

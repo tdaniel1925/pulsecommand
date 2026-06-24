@@ -4,6 +4,8 @@ import { ExportCsvButton } from "@/components/admin/ExportCsvButton";
 export default async function ReportsPage() {
   const supabase = createAdminClient();
 
+  const now = new Date().getTime();
+
   const [{ data: clientsData }, { data: postsData }, { data: activitiesData }] =
     await Promise.all([
       supabase
@@ -12,11 +14,11 @@ export default async function ReportsPage() {
       supabase
         .from("social_posts")
         .select("id, client_id, status, platforms, published_at, created_at")
-        .gte("created_at", new Date(Date.now() - 90 * 86400000).toISOString()),
+        .gte("created_at", new Date(now - 90 * 86400000).toISOString()),
       supabase
         .from("activities")
         .select("id, client_id, type, created_at")
-        .gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString()),
+        .gte("created_at", new Date(now - 30 * 86400000).toISOString()),
     ]);
 
   const clients = clientsData ?? [];
@@ -102,7 +104,7 @@ export default async function ReportsPage() {
   }
 
   // ── Stale clients (no content in 14 days) ─────────────────────────────────
-  const fourteenDaysAgo = Date.now() - 14 * 86400000;
+  const fourteenDaysAgo = now - 14 * 86400000;
   const clientsWithNoPostsIn14Days = activeClients
     .map((client) => {
       const clientPosts = posts
@@ -115,7 +117,7 @@ export default async function ReportsPage() {
       const lastPostTime = lastPostDate ? new Date(lastPostDate).getTime() : 0;
       if (lastPostDate && lastPostTime >= fourteenDaysAgo) return null;
       const daysSince = lastPostDate
-        ? Math.floor((Date.now() - lastPostTime) / 86400000)
+        ? Math.floor((now - lastPostTime) / 86400000)
         : 9999;
       return {
         id: client.id as string,

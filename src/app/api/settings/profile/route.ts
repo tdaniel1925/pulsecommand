@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest) {
       ...(phone !== undefined ? { phone } : {}),
     };
 
-    const updates: Record<string, any> = { metadata: updatedMetadata };
+    const updates: Record<string, unknown> = { metadata: updatedMetadata };
     if (business_name !== undefined) updates.business_name = business_name;
 
     await supabase
@@ -34,8 +34,9 @@ export async function PATCH(req: NextRequest) {
       .eq('id', client.id);
 
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[settings/profile]', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

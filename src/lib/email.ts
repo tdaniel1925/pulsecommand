@@ -147,7 +147,6 @@ export async function sendPostReadyEmail({
   businessName,
   caption,
   imageUrl,
-  postId,
 }: {
   to: string;
   businessName: string;
@@ -288,9 +287,7 @@ export async function sendOnboardingCompleteEmail({
 export async function sendStrategyEmail({
   to,
   firstName,
-  businessName,
   strategyHTML,
-  clientId,
 }: {
   to: string;
   firstName: string;
@@ -299,7 +296,6 @@ export async function sendStrategyEmail({
   clientId: string;
 }) {
   const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/strategy`;
-  const approveUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/strategy/approve?clientId=${clientId}`;
 
   const body = `
     <p style="color:#6b7280;">Hi ${firstName}, your personalized Brand Strategy Plan has been created based on your interview with our AI.</p>

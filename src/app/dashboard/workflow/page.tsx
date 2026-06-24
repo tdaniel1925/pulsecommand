@@ -13,7 +13,7 @@ export default async function WorkflowPage() {
     .eq("user_id", user?.id ?? "")
     .single();
 
-  const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+  const sixtyDaysAgo = new Date(new Date().getTime() - 60 * 24 * 60 * 60 * 1000).toISOString();
 
   const { data: rawPosts } = await supabase
     .from("social_posts")

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendWelcomeEmail } from '@/lib/email'
+import { getStripe, getPlan } from '@/lib/stripe'
 
 interface SignUpBody {
   email: string
@@ -10,12 +11,16 @@ interface SignUpBody {
   lastName: string
   businessName?: string
   phone?: string
+  plan?: string // selected plan id (lite | full | premium)
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: SignUpBody = await request.json()
-    const { email, password, firstName, lastName, businessName, phone } = body
+    const { email, password, firstName, lastName, businessName, phone, plan } = body
+
+    // Persist the chosen plan if it's a known one (entitlements/billing use it).
+    const selectedPlan = plan ? getPlan(plan) : null
 
     if (!email || !password || !firstName || !lastName) {
       return NextResponse.json(
@@ -67,6 +72,7 @@ export async function POST(request: NextRequest) {
         phone: phone ?? null,
         status: 'active',
         subscription_status: 'free',
+        plan_name: selectedPlan?.id ?? null,
         onboarding_step: 'welcome',
         onboarding_pin: pin,
       })
@@ -83,8 +89,26 @@ export async function POST(request: NextRequest) {
       .from('brand_profiles')
       .insert({ client_id: client.id })
 
-    // TODO: create Stripe customer
-    console.log('TODO: Create Stripe customer for user:', userId)
+    // Create a Stripe customer up front so checkout/portal have one ready.
+    // Guarded by getStripe(): if Stripe isn't configured this is skipped and
+    // sign-up still succeeds (customer is created lazily at checkout instead).
+    const stripe = getStripe()
+    if (stripe) {
+      try {
+        const customer = await stripe.customers.create({
+          email,
+          name: `${firstName} ${lastName}`.trim(),
+          metadata: { clientId: client.id, plan: selectedPlan?.id ?? '' },
+        })
+        await admin
+          .from('clients')
+          .update({ stripe_customer_id: customer.id })
+          .eq('id', client.id)
+      } catch (err) {
+        // Non-fatal: don't block account creation on a Stripe hiccup.
+        console.error('Stripe customer creation failed (non-fatal):', err)
+      }
+    }
 
     // Fetch generated onboarding_pin and send welcome email
     const { data: newClient } = await admin

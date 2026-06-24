@@ -6,12 +6,34 @@ import { createClient } from "@/lib/supabase/client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+interface NotificationPrefs {
+  post_ready?: boolean;
+  post_published?: boolean;
+  video_ready?: boolean;
+  weekly_summary?: boolean;
+  monthly_report?: boolean;
+}
+
+interface ClientMetadata {
+  industry?: string;
+  website?: string;
+  phone?: string;
+  brand_colors?: string[];
+  brand_voice?: string;
+  target_audience?: string;
+  logo_url?: string;
+  auto_publish?: boolean;
+  post_time?: string;
+  notifications?: NotificationPrefs;
+  [key: string]: unknown;
+}
+
 interface ClientData {
   id: string;
   business_name: string | null;
   email: string | null;
   status: string | null;
-  metadata: any;
+  metadata: ClientMetadata | null;
   ayrshare_profile_key: string | null;
   ayrshare_connected_platforms: string[] | null;
   plan_name: string | null;
@@ -357,8 +379,8 @@ function BrandTab({
       });
       if (!res.ok) throw new Error("Failed to save logo URL");
       onToast({ message: "Logo uploaded", type: "success" });
-    } catch (err: any) {
-      onToast({ message: err.message ?? "Failed to upload logo", type: "error" });
+    } catch (err: unknown) {
+      onToast({ message: err instanceof Error ? err.message : "Failed to upload logo", type: "error" });
     } finally {
       setLoadingLogo(false);
     }
@@ -808,8 +830,8 @@ function AccountTab({
         throw new Error(data.error ?? "Failed");
       }
       window.location.href = "/";
-    } catch (err: any) {
-      onToast({ message: err.message ?? "Failed to delete account", type: "error" });
+    } catch (err: unknown) {
+      onToast({ message: err instanceof Error ? err.message : "Failed to delete account", type: "error" });
       setDeleting(false);
     }
   }

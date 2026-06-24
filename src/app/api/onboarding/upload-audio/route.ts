@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { validateUpload } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,8 +28,12 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
 
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided in form data' }, { status: 400 })
+    const invalid = validateUpload(file, {
+      maxBytes: 50 * 1024 * 1024, // 50MB
+      allowedTypes: ['audio/'],
+    })
+    if (invalid || !file) {
+      return NextResponse.json({ error: invalid ?? 'No file provided in form data' }, { status: 400 })
     }
 
     const fileExtension = file.name.split('.').pop() ?? 'mp3'

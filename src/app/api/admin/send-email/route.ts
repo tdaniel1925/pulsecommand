@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendWelcomeEmail, sendReportEmail } from "@/lib/email";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export async function POST(request: NextRequest) {
   try {
+    const gate = await requireAdmin();
+    if (gate.response) return gate.response;
+
     const { clientId, type } = await request.json();
 
     if (!clientId || !type) {

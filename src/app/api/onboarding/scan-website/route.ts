@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { normalizeWebsiteUrl, assertPublicUrl } from '@/lib/validation'
 
 const getAnthropic = () => {
   const apiKey = process.env.ANTHROPIC_API_KEY
@@ -82,8 +83,20 @@ export async function POST(request: NextRequest) {
     const { url } = await request.json()
     if (!url) return NextResponse.json({ error: 'URL required' }, { status: 400 })
 
-    const cleanUrl = url.startsWith('http') ? url : `https://${url}`
-    const origin = new URL(cleanUrl).origin
+    const parsed = normalizeWebsiteUrl(url)
+    if (!parsed) {
+      return NextResponse.json({ error: 'Invalid website URL' }, { status: 400 })
+    }
+
+    // SSRF guard: refuse to fetch internal/private/metadata addresses.
+    const blockReason = await assertPublicUrl(parsed)
+    if (blockReason) {
+      console.warn('[scan-website] blocked URL:', parsed.href, '-', blockReason)
+      return NextResponse.json({ error: 'That website address cannot be scanned' }, { status: 400 })
+    }
+
+    const cleanUrl = parsed.href
+    const origin = parsed.origin
 
     // Identify additional pages to scan
     const pagesToScan = [

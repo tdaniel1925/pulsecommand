@@ -2,11 +2,15 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/auth/admin';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const gate = await requireAdmin();
+  if (gate.response) return gate.response;
+
   const { id } = await params;
   const supabase = createAdminClient();
 
@@ -27,6 +31,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const gate = await requireAdmin();
+  if (gate.response) return gate.response;
+
   const { id } = await params;
   const { addonKey } = await req.json();
 
@@ -69,6 +76,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const gate = await requireAdmin();
+  if (gate.response) return gate.response;
+
   const { id } = await params;
   const { addonKey } = await req.json();
 

@@ -56,7 +56,7 @@ export function AddonsGrid({ addons }: { addons: Addon[] }) {
           body: JSON.stringify({ addonKey: addon.key, stripePriceId: addon.stripe_price_id }),
         });
         const data = await res.json() as { url?: string; error?: string };
-        if (data.url) { window.location.href = data.url; return; }
+        if (data.url) { window.location.assign(data.url); return; }
         setMessage(data.error ?? 'Failed to start checkout.');
       } else {
         // No Stripe price — manual request

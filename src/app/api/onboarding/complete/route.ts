@@ -44,16 +44,18 @@ export async function POST() {
         .from("clients")
         .update({ ayrshare_profile_key: profile.profileKey })
         .eq("id", client.id);
-    } catch (ayrshareErr: any) {
-      console.error("[onboarding/complete] Ayrshare profile creation failed:", ayrshareErr.message);
+    } catch (ayrshareErr: unknown) {
+      const msg = ayrshareErr instanceof Error ? ayrshareErr.message : String(ayrshareErr);
+      console.error("[onboarding/complete] Ayrshare profile creation failed:", msg);
     }
   }
 
   // Step 6: Trigger first post generation
   try {
     await generatePostForClient(client.id);
-  } catch (genErr: any) {
-    console.error("[onboarding/complete] Post generation failed:", genErr.message);
+  } catch (genErr: unknown) {
+    const msg = genErr instanceof Error ? genErr.message : String(genErr);
+    console.error("[onboarding/complete] Post generation failed:", msg);
   }
 
   // Step 7: Send onboarding complete email
@@ -63,8 +65,9 @@ export async function POST() {
       firstName: client.business_name.split(" ")[0],
       businessName: client.business_name,
     });
-  } catch (emailErr: any) {
-    console.error("[onboarding/complete] Email failed:", emailErr.message);
+  } catch (emailErr: unknown) {
+    const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
+    console.error("[onboarding/complete] Email failed:", msg);
   }
 
   // Step 8: Insert welcome activity

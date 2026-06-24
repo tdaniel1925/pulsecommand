@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     const admin = createAdminClient()
     const { data: demo } = await admin
       .from('demo_requests')
-      .select('id, email_verified, video_script')
+      .select('id, email_verified')
       .eq('verify_token', token)
       .single()
 
@@ -78,15 +78,6 @@ export async function GET(request: NextRequest) {
 
     // Mark verified
     await admin.from('demo_requests').update({ email_verified: true }).eq('id', demo.id)
-
-    // Trigger HeyGen render in background if not already verified
-    if (!demo.email_verified && demo.video_script) {
-      fetch(`${BASE_URL}/api/demo/render-video`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ demoId: demo.id }),
-      }).catch(err => console.error('render-video fire failed:', err))
-    }
 
     // Redirect to results page
     return NextResponse.redirect(`${BASE_URL}/demo/results/${demo.id}?verified=1`)

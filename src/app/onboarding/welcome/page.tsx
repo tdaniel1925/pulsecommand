@@ -2,31 +2,29 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Zap, Star, ArrowRight, Share2, Mic, Video, BarChart3, Loader2, Phone } from "lucide-react";
+import { Check, Zap, Star, ArrowRight, Share2, Globe, Image as ImageIcon, Loader2 } from "lucide-react";
 import OnboardingNav from "@/components/OnboardingNav";
 
 const included = [
-  { icon: <Share2 className="w-4 h-4 text-primary-600" />, text: "150 social posts/month across 5 channels" },
-  { icon: <Mic className="w-4 h-4 text-purple-600" />, text: "Bi-weekly AI voice podcast (26 eps/year)" },
-  { icon: <Video className="w-4 h-4 text-rose-600" />, text: "4 HeyGen AI presenter videos per month" },
-  { icon: <BarChart3 className="w-4 h-4 text-teal-600" />, text: "Monthly performance report & review" },
+  { icon: <Share2 className="w-4 h-4 text-primary-600" />, text: "AI social posts across your connected channels" },
+  { icon: <ImageIcon className="w-4 h-4 text-purple-600" />, text: "On-brand AI images for every post" },
+  { icon: <Globe className="w-4 h-4 text-teal-600" />, text: "AI-built landing pages on your domain" },
 ];
 
-const STEP_ORDER = ["signed_up", "brand_assets_saved", "avatar_selected", "voice_selected", "call_done", "active"];
+// New focused flow: account → brand setup (with website scan) → live.
+const STEP_ORDER = ["signed_up", "brand_assets_saved", "active"];
 
 function stepComplete(currentStep: string, targetStep: string) {
   const ci = STEP_ORDER.indexOf(currentStep);
   const ti = STEP_ORDER.indexOf(targetStep);
+  // Legacy steps (avatar/voice/call) all imply brand assets were saved.
+  const legacyDone = ["avatar_selected", "voice_selected", "call_done", "profile_built"];
+  if (targetStep === "brand_assets_saved" && legacyDone.includes(currentStep)) return true;
   return ci >= ti && ci >= 0 && ti >= 0;
 }
 
 export default function WelcomePage() {
   const [onboardingStep, setOnboardingStep] = useState<string>("");
-  const [phone, setPhone] = useState("");
-  const [phoneInput, setPhoneInput] = useState("");
-  const [savingPhone, setSavingPhone] = useState(false);
-  const [phoneSaved, setPhoneSaved] = useState(false);
-  const [phoneError, setPhoneError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,59 +32,16 @@ export default function WelcomePage() {
       .then(r => r.json())
       .then(d => {
         setOnboardingStep(d.onboarding_step ?? "signed_up");
-        setPhone(d.phone ?? "");
-        setPhoneInput(d.phone ?? "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
-  async function savePhone() {
-    if (!phoneInput.trim()) { setPhoneError("Please enter your phone number"); return; }
-    setSavingPhone(true);
-    setPhoneError("");
-    try {
-      const res = await fetch("/api/onboarding/pin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phoneInput.trim() }),
-      });
-      if (!res.ok) throw new Error("Failed to save");
-      setPhone(phoneInput.trim());
-      setPhoneSaved(true);
-    } catch {
-      setPhoneError("Failed to save phone number. Please try again.");
-    } finally {
-      setSavingPhone(false);
-    }
-  }
-
   const hasBrandAssets = stepComplete(onboardingStep, "brand_assets_saved");
-  const hasAvatar = stepComplete(onboardingStep, "avatar_selected");
-  const hasVoice = stepComplete(onboardingStep, "voice_selected");
-  const hasPhone = !!phone;
-  const hasCall = stepComplete(onboardingStep, "call_done");
 
   // Next unlocked step
-  const nextHref = !hasBrandAssets
-    ? "/onboarding/brand-assets"
-    : !hasAvatar
-    ? "/onboarding/choose-avatar"
-    : !hasVoice
-    ? "/onboarding/choose-voice"
-    : !hasCall
-    ? "/onboarding/interview"
-    : "/dashboard";
-
-  const nextLabel = !hasBrandAssets
-    ? "Start Step 2: Brand Assets →"
-    : !hasAvatar
-    ? "Continue: Choose Avatar →"
-    : !hasVoice
-    ? "Continue: Choose Voice →"
-    : !hasCall
-    ? "Continue: Brand Interview →"
-    : "Go to Dashboard →";
+  const nextHref = !hasBrandAssets ? "/onboarding/brand-assets" : "/dashboard";
+  const nextLabel = !hasBrandAssets ? "Start: Set Up Your Brand →" : "Go to Dashboard →";
 
   const steps = [
     {
@@ -100,8 +55,8 @@ export default function WelcomePage() {
     },
     {
       num: 2,
-      title: "Set Up Your Brand Assets",
-      desc: "Scan your website, upload your logo, set brand colors and tone of voice.",
+      title: "Set Up Your Brand",
+      desc: "Enter your website — we'll scan it to auto-fill your business details, colors, logo, and content topics. Review, tweak, and save.",
       done: hasBrandAssets,
       href: "/onboarding/brand-assets",
       cta: hasBrandAssets ? null : "Set Up Brand",
@@ -109,39 +64,12 @@ export default function WelcomePage() {
     },
     {
       num: 3,
-      title: "Choose Your AI Avatar",
-      desc: "Pick a professional AI presenter from our library for your monthly brand videos.",
-      done: hasAvatar,
-      href: hasBrandAssets ? "/onboarding/choose-avatar" : null,
-      cta: hasAvatar ? null : hasBrandAssets ? "Choose Avatar" : null,
-      locked: !hasBrandAssets && !hasAvatar,
-    },
-    {
-      num: 4,
-      title: "Choose Your AI Voice",
-      desc: "Select a voice from our ElevenLabs library for your bi-weekly podcast episodes.",
-      done: hasVoice,
-      href: hasAvatar ? "/onboarding/choose-voice" : null,
-      cta: hasVoice ? null : hasAvatar ? "Choose Voice" : null,
-      locked: !hasAvatar && !hasVoice,
-    },
-    {
-      num: 5,
-      title: "Complete Your Brand Interview",
-      desc: "A 15-minute AI phone call captures your brand story. This unlocks all content generation.",
-      done: hasCall,
-      href: hasVoice ? "/onboarding/interview" : null,
-      cta: hasCall ? null : hasVoice ? "Start Interview" : null,
-      locked: !hasVoice && !hasCall,
-    },
-    {
-      num: 6,
-      title: "Your Content Goes Live",
-      desc: "We build your full content pipeline — 150 posts, videos, podcast episodes, and reports.",
-      done: hasCall,
-      href: hasCall ? "/dashboard" : null,
-      cta: hasCall ? "Go to Dashboard" : null,
-      locked: !hasCall,
+      title: "You're Live",
+      desc: "We connect your social accounts and start generating on-brand posts and landing pages.",
+      done: hasBrandAssets,
+      href: hasBrandAssets ? "/dashboard" : null,
+      cta: hasBrandAssets ? "Go to Dashboard" : null,
+      locked: !hasBrandAssets,
     },
   ];
 
@@ -173,54 +101,7 @@ export default function WelcomePage() {
             {/* Left: Steps */}
             <div className="lg:col-span-2 space-y-4">
               <h2 className="text-xl font-bold text-neutral-900">Your Setup Checklist</h2>
-              <p className="text-sm text-neutral-500 mb-2">Complete all steps to activate your content pipeline.</p>
-
-              {/* Phone number collection — shown if not yet saved */}
-              {!loading && !hasPhone && (
-                <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-amber-900">Add Your Phone Number</p>
-                      <p className="text-xs text-amber-700">Required for your brand interview call and SMS reminders.</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="tel"
-                      value={phoneInput}
-                      onChange={e => setPhoneInput(e.target.value)}
-                      placeholder="+1 (555) 000-0000"
-                      className="flex-1 px-3 py-2 border border-amber-300 rounded-xl text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
-                    />
-                    <button
-                      onClick={savePhone}
-                      disabled={savingPhone}
-                      className="px-4 py-2 bg-amber-500 text-white text-sm font-bold rounded-xl hover:bg-amber-600 disabled:opacity-60 transition-colors flex items-center gap-1.5"
-                    >
-                      {savingPhone ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                      Save
-                    </button>
-                  </div>
-                  {phoneError && <p className="text-xs text-red-600">{phoneError}</p>}
-                </div>
-              )}
-
-              {!loading && hasPhone && !phoneSaved && (
-                <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-green-700">
-                  <Check className="w-4 h-4 flex-shrink-0" />
-                  Phone saved: <span className="font-mono font-medium">{phone}</span>
-                </div>
-              )}
-
-              {phoneSaved && (
-                <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-green-700">
-                  <Check className="w-4 h-4 flex-shrink-0" />
-                  Phone number saved!
-                </div>
-              )}
+              <p className="text-sm text-neutral-500 mb-2">Complete these steps to start generating content.</p>
 
               {loading ? (
                 <div className="flex items-center justify-center py-12 text-neutral-400">
@@ -291,16 +172,13 @@ export default function WelcomePage() {
                   </div>
                   <div>
                     <p className="font-bold text-sm">BundledContent</p>
-                    <p className="text-neutral-400 text-xs">Complete AI Marketing Service</p>
+                    <p className="text-neutral-400 text-xs">AI Social Posts & Landing Pages</p>
                   </div>
                 </div>
 
                 <div className="mb-4 pb-4 border-b border-neutral-800">
                   <div className="flex items-end justify-between">
-                    <div>
-                      <span className="text-3xl font-bold">$745</span>
-                      <span className="text-neutral-400 text-sm">/mo</span>
-                    </div>
+                    <span className="text-sm font-semibold text-white">Your plan is active</span>
                     <span className="text-xs text-green-400 font-medium bg-green-400/10 px-2 py-1 rounded-full">No lock-in</span>
                   </div>
                   <p className="text-neutral-500 text-xs mt-1">First charge after 14-day free trial</p>

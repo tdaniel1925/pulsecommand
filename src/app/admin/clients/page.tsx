@@ -35,9 +35,8 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  function loadClients() {
-    setLoading(true);
-    fetch("/api/clients")
+  function fetchClients() {
+    return fetch("/api/clients")
       .then((r) => r.json())
       .then((data) => {
         setClients(Array.isArray(data) ? data : data.clients ?? []);
@@ -46,7 +45,12 @@ export default function ClientsPage() {
       .catch(() => setLoading(false));
   }
 
-  useEffect(() => { loadClients(); }, []);
+  function loadClients() {
+    setLoading(true);
+    fetchClients();
+  }
+
+  useEffect(() => { fetchClients(); }, []);
 
   const filtered = clients.filter((c) => {
     const matchesTab = activeTab === "All" || c.status === activeTab.toLowerCase();

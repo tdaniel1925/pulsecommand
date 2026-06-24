@@ -4,14 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+// Retired steps (choose-avatar/choose-voice/interview) are kept in the union so
+// any lingering links still typecheck, but they no longer appear in the flow.
 type Step = "sign-up" | "schedule" | "welcome" | "brand-assets" | "choose-avatar" | "choose-voice" | "interview" | "complete";
 
 const steps: { key: Step; label: string; href: string }[] = [
   { key: "welcome", label: "Welcome", href: "/onboarding/welcome" },
-  { key: "brand-assets", label: "Brand Assets", href: "/onboarding/brand-assets" },
-  { key: "choose-avatar", label: "Your Avatar", href: "/onboarding/choose-avatar" },
-  { key: "choose-voice", label: "Your Voice", href: "/onboarding/choose-voice" },
-  { key: "interview", label: "Brand Interview", href: "/onboarding/interview" },
+  { key: "brand-assets", label: "Brand Setup", href: "/onboarding/brand-assets" },
   { key: "complete", label: "Complete", href: "/onboarding/complete" },
 ];
 

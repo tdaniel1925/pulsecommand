@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { Download, Link2, ExternalLink } from 'lucide-react';
+import { Download, ExternalLink } from 'lucide-react';
 import { CopyLinkButton } from '@/components/video/CopyLinkButton';
 
 interface VideoData {

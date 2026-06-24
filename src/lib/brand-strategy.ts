@@ -41,9 +41,26 @@ export interface BrandStrategyPlan {
 }
 
 /**
+ * Shape of the raw analysis produced by the AI model. All fields are
+ * optional because the model output is dynamic and may omit any of them.
+ */
+export interface BrandAnalysis {
+  contentPillars?: string[];
+  businessDescription?: string;
+  targetAudience?: string;
+  uniqueValueProp?: string;
+  audiencePainPoints?: string[] | string;
+  priorityChannels?: string[];
+  postingFrequency?: string;
+  bestTimes?: string;
+  brandPersonality?: string;
+  toneOfVoice?: string;
+}
+
+/**
  * Transform Claude analysis into Brand Strategy Plan
  */
-export function transformAnalysisToStrategy(analysis: any): Omit<BrandStrategyPlan, 'clientId'> {
+export function transformAnalysisToStrategy(analysis: BrandAnalysis): Omit<BrandStrategyPlan, 'clientId'> {
   const pillars = analysis.contentPillars ?? [];
 
   return {

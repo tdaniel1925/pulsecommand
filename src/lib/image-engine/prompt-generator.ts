@@ -101,7 +101,7 @@ function parseColors(colorStr: string): { primaryDesc: string; secondaryDesc: st
 
 // ─── CTA button text extractor ────────────────────────────────────────────────
 
-function extractCTA(cta: string, businessName: string): string {
+function extractCTA(cta: string): string {
   if (!cta || cta.length < 3) return 'Learn More';
   // Extract the action phrase from the CTA
   const clean = cta.replace(/learn more at .*/i, '').replace(/visit .*/i, '').trim();
@@ -121,7 +121,7 @@ export function generateImagePrompt(
 ): string {
   const colors = parseColors(brand.colors);
   const industry = getIndustryVisuals(brand.industry);
-  const ctaText = extractCTA(post.cta, brand.businessName);
+  const ctaText = extractCTA(post.cta);
 
   // For infographics and text graphics, use the specialized builders
   if (imageType === 'infographic') return buildInfographicPrompt(post, brand, colors, subStyle as InfographicStyle);

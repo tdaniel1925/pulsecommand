@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-interface AyrsharePost {
-  post: string
-  platforms: string[]
-  mediaUrls?: string[]
+interface MonthlyContentShape {
+  tweets?: Array<{ tweets: string[] }>
+  articles?: Array<{ title: string; content: string }>
+  caseStudies?: Array<{ clientName: string; challenge: string; results: Record<string, string> }>
 }
 
 export async function POST(request: NextRequest) {
@@ -41,8 +41,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Ayrshare not connected' }, { status: 400 })
     }
 
-    const content = monthlyContent.content as Record<string, any>
-    const platforms = brandProfile.connected_platforms || []
+    const content = monthlyContent.content as MonthlyContentShape
 
     // Publish tweets first (smallest batches)
     if (Array.isArray(content.tweets) && content.tweets.length > 0) {

@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { AutoApproveToggle } from "@/components/dashboard/AutoApproveToggle";
-import { SocialPostsGrid } from "@/components/dashboard/SocialPostsGrid";
 import { SocialViewToggle } from "@/components/dashboard/SocialViewToggle";
 
 export default async function SocialPage() {

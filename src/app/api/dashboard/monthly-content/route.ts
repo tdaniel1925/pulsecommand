@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate stats from content object
-    const content = monthlyContent.content as Record<string, any>
+    const content = monthlyContent.content as Record<string, unknown>
     const stats: ContentStats = {
       totalPieces: 0,
       whitepaper: content.whitepaper ? 1 : 0,

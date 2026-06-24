@@ -84,12 +84,12 @@ export type AyrsharePostParams = {
 export type AyrsharePostResult = {
   id: string;
   status: string;
-  errors?: any[];
+  errors?: unknown[];
   postIds?: Record<string, string>;
 };
 
 export async function postToAyrshare(params: AyrsharePostParams): Promise<AyrsharePostResult> {
-  const body: Record<string, any> = {
+  const body: Record<string, unknown> = {
     post: params.post,
     platforms: params.platforms,
   };

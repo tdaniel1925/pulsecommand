@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Client has not connected social accounts yet' }, { status: 400 });
     }
 
-    const captions = (post.metadata as any)?.captions ?? {};
+    const captions = (post.metadata as { captions?: Record<string, string> } | null)?.captions ?? {};
     const platforms: string[] = Array.isArray(post.platforms) ? post.platforms : [];
 
     // Map platform names to Ayrshare's expected format
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     // Use platform-specific caption if available, fall back to main content
     // Post to each platform separately so each gets its own caption
-    const results: Record<string, any> = {};
+    const results: Record<string, Awaited<ReturnType<typeof postToAyrshare>>> = {};
     const errors: Record<string, string> = {};
 
     for (const platform of ayrPlatforms) {
@@ -68,9 +68,10 @@ export async function POST(req: NextRequest) {
           mediaUrls: post.image_url ? [post.image_url] : undefined,
         });
         results[platform] = result;
-      } catch (err: any) {
-        errors[platform] = err.message;
-        console.error(`[ayrshare/publish] ${platform} failed:`, err.message);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        errors[platform] = msg;
+        console.error(`[ayrshare/publish] ${platform} failed:`, msg);
       }
     }
 
@@ -117,14 +118,16 @@ export async function POST(req: NextRequest) {
             imageUrl: post.image_url,
           });
         }
-      } catch (emailErr: any) {
-        console.error('[ayrshare/publish] Email failed:', emailErr.message);
+      } catch (emailErr: unknown) {
+        const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
+        console.error('[ayrshare/publish] Email failed:', msg);
       }
     }
 
     return NextResponse.json({ ok: true, results, errors });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[ayrshare/publish]', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

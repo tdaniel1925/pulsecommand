@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowRight, Download, CheckCircle, Loader2, AlertCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 interface StrategyPlan {
@@ -73,44 +73,10 @@ export default function StrategyPage() {
       });
       if (!res.ok) throw new Error("Failed to approve");
       setApproved(true);
-    } catch (err) {
+    } catch {
       setError("Failed to approve strategy");
     } finally {
       setApproving(false);
-    }
-  }
-
-  async function handleDownloadPDF() {
-    if (!strategy) return;
-    try {
-      const res = await fetch('/api/strategy/export-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ format: 'html' }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error);
-
-      // Load html2pdf library and convert
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      script.onload = () => {
-        const element = document.createElement('div');
-        element.innerHTML = data.html;
-        const opt = {
-          margin: 0,
-          filename: data.filename,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
-        };
-        (window as any).html2pdf().set(opt).from(element).save();
-      };
-      document.head.appendChild(script);
-    } catch (err) {
-      setError('Failed to generate PDF');
-      console.error(err);
     }
   }
 
@@ -277,12 +243,12 @@ export default function StrategyPage() {
 
         <div>
           <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-3">Brand Personality</h3>
-          <p className="text-base text-neutral-900 font-semibold italic text-primary-600">"{strategy.toneAndVoice.personality}"</p>
+          <p className="text-base text-neutral-900 font-semibold italic text-primary-600">&ldquo;{strategy.toneAndVoice.personality}&rdquo;</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h4 className="font-bold text-green-900 mb-3">✓ Do's</h4>
+            <h4 className="font-bold text-green-900 mb-3">✓ Do&apos;s</h4>
             <ul className="space-y-2">
               {strategy.toneAndVoice.doList.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
@@ -294,7 +260,7 @@ export default function StrategyPage() {
           </div>
 
           <div>
-            <h4 className="font-bold text-red-900 mb-3">✗ Don'ts</h4>
+            <h4 className="font-bold text-red-900 mb-3">✗ Don&apos;ts</h4>
             <ul className="space-y-2">
               {strategy.toneAndVoice.dontList.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
@@ -310,7 +276,7 @@ export default function StrategyPage() {
           <h4 className="font-bold text-neutral-900 mb-3">Example Phrases</h4>
           <div className="space-y-2">
             {strategy.toneAndVoice.examplePhrases.map((phrase, i) => (
-              <div key={i} className="p-3 bg-neutral-50 rounded-lg italic text-neutral-700">"{phrase}"</div>
+              <div key={i} className="p-3 bg-neutral-50 rounded-lg italic text-neutral-700">&ldquo;{phrase}&rdquo;</div>
             ))}
           </div>
         </div>
@@ -364,17 +330,9 @@ export default function StrategyPage() {
                 </>
               )}
             </button>
-
-            <button
-              onClick={handleDownloadPDF}
-              className="flex items-center justify-center gap-2 px-6 py-4 bg-neutral-100 text-neutral-900 font-bold rounded-xl hover:bg-neutral-200 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Download PDF
-            </button>
           </div>
           <p className="text-center text-sm text-neutral-600">
-            Once approved, we'll generate your first batch of content within 24 hours based on this strategy.
+            Once approved, we&apos;ll generate your first batch of content within 24 hours based on this strategy.
           </p>
         </div>
       )}

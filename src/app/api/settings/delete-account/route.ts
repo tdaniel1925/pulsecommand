@@ -34,8 +34,9 @@ export async function POST(req: NextRequest) {
     await admin.auth.admin.deleteUser(user.id);
 
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[settings/delete-account]', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

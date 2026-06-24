@@ -27,8 +27,8 @@ export function ConnectSocialAccounts({ connectedPlatforms }: ConnectSocialAccou
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to generate link");
       window.open(data.url, "_blank", "width=600,height=700");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }

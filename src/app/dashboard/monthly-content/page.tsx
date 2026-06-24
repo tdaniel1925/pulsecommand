@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Download, CheckCircle, Eye, Loader2, AlertCircle, FileText, BookOpen, MessageSquare, Image, Award, Mail, Headphones, Calendar } from "lucide-react";
+import { Download, CheckCircle, Loader2, AlertCircle, FileText, BookOpen, MessageSquare, Image, Award, Mail, Headphones, Calendar } from "lucide-react";
 import Link from "next/link";
 
 interface MonthlyContent {
@@ -9,13 +9,13 @@ interface MonthlyContent {
   month: string;
   status: 'ready_for_review' | 'approved' | 'published';
   content: {
-    whitepaper?: any;
-    articles?: any[];
-    tweets?: any[];
-    infographics?: any[];
-    caseStudies?: any[];
-    emails?: any[];
-    podcasts?: any[];
+    whitepaper?: unknown;
+    articles?: unknown[];
+    tweets?: unknown[];
+    infographics?: unknown[];
+    caseStudies?: unknown[];
+    emails?: unknown[];
+    podcasts?: unknown[];
   };
   created_at: string;
   published_at?: string;
@@ -66,29 +66,8 @@ export default function MonthlyContentPage() {
       });
       if (!res.ok) throw new Error("Failed to approve");
       window.location.reload();
-    } catch (err) {
+    } catch {
       setError("Failed to approve content");
-    } finally {
-      setApproving(false);
-    }
-  };
-
-  const handlePublishAll = async () => {
-    if (!content) return;
-    setApproving(true);
-    try {
-      // Publish is triggered automatically after approve, but this endpoint
-      // can be called manually to retry publishing if needed
-      const res = await fetch("/api/dashboard/monthly-content/publish", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contentId: content.id }),
-      });
-      if (!res.ok) throw new Error("Failed to publish");
-      // Refresh to show updated status
-      setTimeout(() => window.location.reload(), 2000);
-    } catch (err) {
-      setError("Failed to publish content");
     } finally {
       setApproving(false);
     }
@@ -233,7 +212,7 @@ export default function MonthlyContentPage() {
                   : 'border-neutral-200 hover:border-primary-300'
               }`}
             >
-              <Image className="w-6 h-6 text-primary-600 mx-auto mb-2" />
+              <Image aria-label="Infographics" className="w-6 h-6 text-primary-600 mx-auto mb-2" />
               <div className="font-bold text-sm">{stats.infographics}</div>
               <div className="text-xs text-neutral-600">Infographics</div>
             </button>

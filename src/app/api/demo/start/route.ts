@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isValidEmail, normalizeWebsiteUrl } from '@/lib/validation'
+import { getClientIp, isDemoRateLimited } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,18 +9,34 @@ export async function POST(request: NextRequest) {
     if (!name || !email || !website) {
       return NextResponse.json({ error: 'Name, email, and website are required' }, { status: 400 })
     }
+    if (typeof name !== 'string' || name.length > 200) {
+      return NextResponse.json({ error: 'Invalid name' }, { status: 400 })
+    }
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
+    }
+    const parsedWebsite = normalizeWebsiteUrl(website)
+    if (!parsedWebsite) {
+      return NextResponse.json({ error: 'Invalid website URL' }, { status: 400 })
+    }
 
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      ?? request.headers.get('x-real-ip')
-      ?? 'unknown'
-
+    const ip = getClientIp(request)
     const admin = createAdminClient()
+
+    // Enforce the rate limit HERE — this is the endpoint that triggers expensive
+    // generation, so it cannot rely on the separate demo/check call.
+    if (await isDemoRateLimited(admin, ip)) {
+      return NextResponse.json(
+        { error: 'Demo limit reached. Please try again later.', rateLimited: true },
+        { status: 429 },
+      )
+    }
 
     const row: Record<string, unknown> = {
       name,
       email: email.toLowerCase().trim(),
       phone: phone || null,
-      website,
+      website: parsedWebsite.href,
       status: 'pending',
     }
     // Optional columns — only include if they exist in the schema
@@ -38,7 +56,7 @@ export async function POST(request: NextRequest) {
       // Retry without optional columns that may not exist
       const { data: d2, error: e2 } = await admin
         .from('demo_requests')
-        .insert({ name, email: email.toLowerCase().trim(), phone: phone || null, website, status: 'pending' })
+        .insert({ name, email: email.toLowerCase().trim(), phone: phone || null, website: parsedWebsite.href, status: 'pending' })
         .select()
         .single()
       demo = d2

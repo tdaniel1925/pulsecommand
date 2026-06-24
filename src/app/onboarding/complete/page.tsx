@@ -44,8 +44,8 @@ export default function OnboardingCompletePage() {
         setErrorMessage(json.error ?? "Activation failed. Please try again.");
         setState("error");
       }
-    } catch (err: any) {
-      setErrorMessage(err?.message ?? "Network error. Please try again.");
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Network error. Please try again.");
       setState("error");
     }
   };
@@ -55,14 +55,13 @@ export default function OnboardingCompletePage() {
     if (calledRef.current) return;
     calledRef.current = true;
     runActivation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const heading = businessName ? `You're all set, ${businessName.split(" ")[0]}!` : "You're all set!";
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <OnboardingNav current="interview" />
+      <OnboardingNav current="complete" />
 
       <main className="max-w-xl mx-auto px-4 py-16 flex flex-col items-center text-center">
         {/* ── LOADING ── */}

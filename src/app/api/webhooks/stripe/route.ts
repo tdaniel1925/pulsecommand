@@ -1,27 +1,49 @@
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-
-const getStripe = () => new Stripe(process.env.STRIPE_SECRET_KEY!)
+import { getStripe, getPlan } from '@/lib/stripe'
 
 export async function POST(request: NextRequest) {
   try {
+    const stripe = getStripe()
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
+    }
+
     const body = await request.text()
     const sig = request.headers.get('stripe-signature')
 
-    if (!sig) {
-      return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 })
+    if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
+      return NextResponse.json({ error: 'Missing signature or webhook secret' }, { status: 400 })
     }
 
     let event: Stripe.Event
     try {
-      event = getStripe().webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!)
+      event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET)
     } catch (err) {
       console.error('Stripe webhook signature verification failed:', err)
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
     const admin = createAdminClient()
+
+    // Idempotency: Stripe delivers at-least-once. Record the event id and skip
+    // if we've already processed it. Requires a `stripe_events(id text pk,
+    // type text, created_at timestamptz default now())` table.
+    const { error: dupeError } = await admin
+      .from('stripe_events')
+      .insert({ id: event.id, type: event.type } as never)
+    if (dupeError) {
+      // Unique-violation → already processed. Any other error: log but proceed
+      // (better to double-process an idempotent update than to drop the event).
+      if (dupeError.code === '23505') {
+        console.log(`[stripe webhook] duplicate event ${event.id} ignored`)
+        return NextResponse.json({ received: true, duplicate: true })
+      }
+      console.error('[stripe webhook] could not record event id:', dupeError.message)
+    }
 
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -62,13 +84,31 @@ export async function POST(request: NextRequest) {
 
           console.log(`[stripe webhook] Addon ${addonKey} activated for client ${clientId}`)
         } else if (session.customer) {
-          // Main subscription checkout
-          await admin
-            .from('clients')
-            .update({ subscription_status: 'active', stripe_customer_id: session.customer as string })
-            .eq('stripe_customer_id', session.customer as string)
+          // Main subscription checkout. create-checkout sets metadata
+          // { clientId, planId } on both the session and the subscription.
+          const sessionClientId = session.metadata?.clientId
+          const planId = session.metadata?.planId
+          const plan = planId ? getPlan(planId) : null
 
-          console.log(`[stripe webhook] Main subscription activated for customer ${session.customer}`)
+          const update: Record<string, unknown> = {
+            subscription_status: 'active',
+            stripe_customer_id: session.customer as string,
+            stripe_subscription_id:
+              typeof session.subscription === 'string' ? session.subscription : null,
+          }
+          if (plan) {
+            update.plan_name = plan.id
+          }
+
+          // Prefer matching by client id (set at checkout) so a brand-new
+          // customer with no prior stripe_customer_id row still updates.
+          const query = admin.from('clients').update(update as never)
+          const { error: updErr } = sessionClientId
+            ? await query.eq('id', sessionClientId)
+            : await query.eq('stripe_customer_id', session.customer as string)
+          if (updErr) console.error('[stripe webhook] client update failed:', updErr.message)
+
+          console.log(`[stripe webhook] Main subscription activated for customer ${session.customer} (plan=${planId ?? 'unknown'})`)
         }
         break
       }

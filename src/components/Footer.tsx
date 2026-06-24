@@ -12,7 +12,7 @@ export default function Footer() {
               <Image src="/logo.png" alt="BundledContent" width={160} height={54} className="h-10 w-auto" />
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed">
-              A complete done-for-you AI marketing service. Social content, podcast, videos, and monthly reporting — all for $745/mo.
+              AI social media on autopilot — posts, images, and auto-publishing across every platform, plus AI-built landing pages. Plans from $149/mo.
             </p>
           </div>
 
@@ -20,10 +20,10 @@ export default function Footer() {
           <div>
             <h4 className="font-bold text-white mb-6">What&apos;s Included</h4>
             <ul className="space-y-3 text-sm text-neutral-400">
-              <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">Social Content</Link></li>
-              <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">AI Voice Podcast</Link></li>
-              <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">HeyGen Videos</Link></li>
-              <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">Monthly Report</Link></li>
+              <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">AI Social Posts</Link></li>
+              <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">AI Images</Link></li>
+              <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">Auto-Publishing</Link></li>
+              <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">AI Landing Pages</Link></li>
             </ul>
           </div>
 
@@ -38,7 +38,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Email updates */}
           <div>
             <h4 className="font-bold text-white mb-6">Stay Updated</h4>
             <p className="text-sm text-neutral-400 mb-4">

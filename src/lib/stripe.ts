@@ -4,78 +4,77 @@ import Stripe from 'stripe'
 export function getStripe(): Stripe | null {
   if (!process.env.STRIPE_SECRET_KEY) return null
   return new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2026-04-22.dahlia' as any,
+    apiVersion: '2026-04-22.dahlia',
   })
 }
 
-// Pricing plans — update price IDs when Stripe is configured
+// Pricing plans — focused product: AI social posts + landing pages.
+// Tiers scale by social posts/month and landing pages. Set real Stripe price IDs
+// via env; placeholders let the app build/run without Stripe configured.
+// `landingPagesPerMonth: -1` means unlimited.
 export const PLANS = {
   starter: {
     id: 'starter',
     name: 'Starter',
-    price: 49,
+    price: 149,
     priceId: process.env.STRIPE_PRICE_STARTER ?? 'price_starter_placeholder',
-    description: 'Perfect for testing',
+    description: 'For solo operators getting consistent online',
     features: [
-      '20 social posts/month',
-      'Basic analytics',
-      'Email support',
+      '30 social posts/month',
+      'AI image with every post',
+      'Auto-publish to your connected accounts',
+      '1 landing page',
     ],
-    highlight: false,
-  },
-  essential: {
-    id: 'essential',
-    name: 'Essential',
-    price: 99,
-    priceId: process.env.STRIPE_PRICE_ESSENTIAL ?? 'price_essential_placeholder',
-    description: 'For growing brands',
-    features: [
-      '50 social posts/month',
-      '2 videos/month',
-      'Advanced analytics',
-      'Priority support',
-    ],
+    // Entitlements consumed by the post-generation loop + app gating.
+    entitlements: {
+      socialPostsPerMonth: 30,
+      landingPagesPerMonth: 1,
+    },
     highlight: false,
   },
   growth: {
     id: 'growth',
     name: 'Growth',
-    price: 149,
+    price: 399,
     priceId: process.env.STRIPE_PRICE_GROWTH ?? 'price_growth_placeholder',
-    description: 'Most popular',
+    description: 'The agency replacement for growing businesses',
     features: [
       '100 social posts/month',
-      '5 videos/month',
-      '✓ Whitepaper',
-      '✓ Articles (5)',
-      '✓ Tweet Threads (20)',
-      '✓ Infographics (8)',
-      '✓ Case Studies (4)',
-      'Dedicated manager',
+      'AI image with every post',
+      'Auto-publish across all platforms',
+      '3 landing pages',
+      'Priority generation',
     ],
+    entitlements: {
+      socialPostsPerMonth: 100,
+      landingPagesPerMonth: 3,
+    },
     highlight: true, // most popular
   },
-  agency: {
-    id: 'agency',
-    name: 'Agency',
-    price: 399,
-    priceId: process.env.STRIPE_PRICE_AGENCY ?? 'price_agency_placeholder',
-    description: 'For teams & agencies',
+  pro: {
+    id: 'pro',
+    name: 'Pro',
+    price: 749,
+    priceId: process.env.STRIPE_PRICE_PRO ?? 'price_pro_placeholder',
+    description: 'High-volume content for established brands',
     features: [
-      'Unlimited posts/videos',
-      'All content types',
-      'Email sequences',
-      'Podcast generation',
-      'Team collaboration',
-      'Custom integrations',
-      'White-label options',
+      '300 social posts/month',
+      'AI image with every post',
+      'Auto-publish across all platforms',
+      'Unlimited landing pages',
+      'Priority generation',
     ],
+    entitlements: {
+      socialPostsPerMonth: 300,
+      landingPagesPerMonth: -1, // unlimited
+    },
     highlight: false,
   },
 } as const
 
 export type PlanId = keyof typeof PLANS
+export type Plan = typeof PLANS[PlanId]
 
-export function getPlan(planId: string): typeof PLANS[PlanId] | null {
+export function getPlan(planId: string): Plan | null {
   return PLANS[planId as PlanId] ?? null
 }

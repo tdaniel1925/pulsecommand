@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Zap, Globe, Loader2, Sparkles, Check, ArrowRight,
+  Globe, Loader2, Sparkles, Check, ArrowRight,
   Users, Target, Trophy, Mic, Video, Share2
 } from "lucide-react";
 

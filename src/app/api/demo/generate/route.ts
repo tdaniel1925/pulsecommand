@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateJSON, DEFAULT_MODEL } from '@/lib/openrouter'
-import { createPodcast, createVideoShort, pollUntilDone, getStatus } from '@/lib/autocontent'
 
 async function scanWebsite(website: string) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
@@ -64,79 +63,6 @@ Return ONLY valid JSON array:
   } catch (err) {
     console.error('generateSocialPosts error:', err)
     return []
-  }
-}
-
-async function generateScripts(brandContext: string) {
-  try {
-    return await generateJSON<{ audioScript: string; videoScript: string }>({
-      model: DEFAULT_MODEL,
-      maxTokens: 2500,
-      prompt: `You are a top-tier content writer. Create two scripts for this business — both must use specific details about their business, not generic filler.
-
-${brandContext}
-
-1. PODCAST INTRO (2 minutes when read aloud at natural pace, ~280 words):
-   - Open with a hook that addresses the ideal customer's pain point
-   - Introduce the business and its #1 service
-   - Explain what makes them different
-   - End with a clear CTA
-
-2. AI PRESENTER VIDEO SCRIPT (60 seconds, ~140 words):
-   - Confident, direct, professional
-   - Lead with the biggest benefit
-   - Mention the differentiator
-   - Strong closing CTA
-
-Return ONLY valid JSON:
-{
-  "audioScript": "full podcast script ��� conversational, natural speech patterns",
-  "videoScript": "full video script — concise, punchy, made for camera"
-}`,
-    });
-  } catch (err) {
-    console.error('generateScripts error:', err)
-    return { audioScript: '', videoScript: '' }
-  }
-}
-
-async function renderPodcast(script: string): Promise<{ audioUrl: string | null; shareUrl: string | null }> {
-  if (!process.env.AUTOCONTENT_API_KEY) return { audioUrl: null, shareUrl: null }
-  try {
-    const req = await createPodcast({
-      text: script,
-      duration: 'short',
-    })
-    // Poll for completion (max 3 min for demo)
-    const result = await pollUntilDone(req.request_id, { maxWaitMs: 180_000, intervalMs: 8_000 })
-    return {
-      audioUrl: result.audioUrl ?? null,
-      shareUrl: result.shareUrl ?? null,
-    }
-  } catch (err) {
-    console.error('AutoContent podcast error:', err)
-    return { audioUrl: null, shareUrl: null }
-  }
-}
-
-async function renderVideoShort(script: string, avatarId?: string): Promise<{ videoUrl: string | null; shareUrl: string | null }> {
-  if (!process.env.AUTOCONTENT_API_KEY) return { videoUrl: null, shareUrl: null }
-  try {
-    const req = await createVideoShort({
-      text: script,
-      avatar1: avatarId ?? '1',
-      subtitles: true,
-      prompt: 'Create a professional, engaging short video for social media',
-    })
-    // Poll for completion (max 5 min for video)
-    const result = await pollUntilDone(req.request_id, { maxWaitMs: 300_000, intervalMs: 10_000 })
-    return {
-      videoUrl: result.videoUrl ?? null,
-      shareUrl: result.shareUrl ?? null,
-    }
-  } catch (err) {
-    console.error('AutoContent video error:', err)
-    return { videoUrl: null, shareUrl: null }
   }
 }
 
@@ -295,27 +221,18 @@ export async function POST(request: NextRequest) {
     // 2. Build rich brand context from scan + owner answers
     const brandContext = buildBrandContext(demo, brandData)
 
-    // 3. Generate social posts + scripts in parallel
-    const [socialPosts, scripts] = await Promise.all([
-      generateSocialPosts(brandContext),
-      generateScripts(brandContext),
-    ])
+    // 3. Generate social posts (POSTS-ONLY demo)
+    const socialPosts = await generateSocialPosts(brandContext)
 
-    // 4. Render podcast + video via AutoContent (parallel)
-    const [podcast, video] = await Promise.all([
-      renderPodcast(scripts.audioScript),
-      renderVideoShort(scripts.videoScript),
-    ])
-
-    // 5. Save everything
+    // 4. Save everything (podcast/video retired — posts only)
     await admin.from('demo_requests').update({
       status: 'done',
       brand_data: brandData,
       social_posts: socialPosts,
-      audio_script: scripts.audioScript,
-      audio_url: podcast.audioUrl,
-      video_script: scripts.videoScript,
-      video_url: video.videoUrl,
+      audio_script: null,
+      audio_url: null,
+      video_script: null,
+      video_url: null,
     }).eq('id', demoId)
 
     // 6. Send immediate notification

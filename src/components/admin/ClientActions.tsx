@@ -1,8 +1,8 @@
 "use client"
 import { useState } from "react"
-import { MessageSquare, Phone, Zap, GitBranch } from "lucide-react"
+import { MessageSquare, Zap, GitBranch } from "lucide-react"
 
-export function ClientActions({ clientId, clientPhone }: { clientId: string; clientPhone?: string }) {
+export function ClientActions({ clientId }: { clientId: string }) {
   const [loading, setLoading] = useState<string | null>(null)
   const [message, setMessage] = useState("")
   const [showSMS, setShowSMS] = useState(false)
@@ -33,16 +33,16 @@ export function ClientActions({ clientId, clientPhone }: { clientId: string; cli
     }
   }
 
-  async function generateContent(type: "social" | "audio" | "video") {
-    setLoading(type)
+  async function generateContent() {
+    setLoading("social")
     try {
-      const res = await fetch("/api/pipeline/generate-content", {
+      const res = await fetch("/api/pipeline/monthly", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientId, type }),
+        body: JSON.stringify({ clientId }),
       })
       const data = await res.json()
-      setResult(data.success ? `${type} content generation started!` : data.error ?? "Failed")
+      setResult(data.success ? "Post generation started!" : data.error ?? "Failed")
     } catch {
       setResult("Request failed")
     } finally {
@@ -95,30 +95,12 @@ export function ClientActions({ clientId, clientPhone }: { clientId: string; cli
       </button>
 
       <button
-        onClick={() => generateContent("social")}
+        onClick={() => generateContent()}
         disabled={!!loading}
         className="w-full flex items-center gap-2 text-sm font-medium border border-neutral-200 rounded-lg px-3 py-2 hover:bg-neutral-50 transition-colors text-neutral-700 disabled:opacity-60"
       >
         <Zap className="w-4 h-4 text-blue-500" />
         {loading === "social" ? "Generating..." : "Generate Social Posts"}
-      </button>
-
-      <button
-        onClick={() => generateContent("audio")}
-        disabled={!!loading}
-        className="w-full flex items-center gap-2 text-sm font-medium border border-neutral-200 rounded-lg px-3 py-2 hover:bg-neutral-50 transition-colors text-neutral-700 disabled:opacity-60"
-      >
-        <Zap className="w-4 h-4 text-orange-500" />
-        {loading === "audio" ? "Generating..." : "Generate Audio Episode"}
-      </button>
-
-      <button
-        onClick={() => generateContent("video")}
-        disabled={!!loading}
-        className="w-full flex items-center gap-2 text-sm font-medium border border-neutral-200 rounded-lg px-3 py-2 hover:bg-neutral-50 transition-colors text-neutral-700 disabled:opacity-60"
-      >
-        <Zap className="w-4 h-4 text-violet-500" />
-        {loading === "video" ? "Generating..." : "Generate Video Script"}
       </button>
 
       <a

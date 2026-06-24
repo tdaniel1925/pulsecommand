@@ -21,8 +21,7 @@ const integrations: Integration[] = [
   { name: "OpenAI", initial: "O", color: "bg-neutral-800", connected: true },
   { name: "Predis", initial: "P", color: "bg-pink-500", connected: false },
   { name: "Ayrshare", initial: "A", color: "bg-blue-500", connected: true },
-  { name: "ElevenLabs", initial: "E", color: "bg-orange-500", connected: false },
-  { name: "HeyGen", initial: "H", color: "bg-cyan-500", connected: true },
+  { name: "AutoContent", initial: "A", color: "bg-cyan-500", connected: true },
   { name: "Headliner", initial: "H", color: "bg-purple-500", connected: false },
   { name: "GitHub", initial: "G", color: "bg-neutral-700", connected: true },
   { name: "Vercel", initial: "V", color: "bg-neutral-900", connected: true },
@@ -71,12 +70,18 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (activeTab === "pipeline" && contentMode === null) {
-      setModeLoading(true);
-      fetch("/api/admin/settings/content-mode")
-        .then(r => r.json())
-        .then(d => setContentMode(d.mode ?? "manual"))
-        .catch(() => setContentMode("manual"))
-        .finally(() => setModeLoading(false));
+      void (async () => {
+        setModeLoading(true);
+        try {
+          const r = await fetch("/api/admin/settings/content-mode");
+          const d = await r.json();
+          setContentMode(d.mode ?? "manual");
+        } catch {
+          setContentMode("manual");
+        } finally {
+          setModeLoading(false);
+        }
+      })();
     }
   }, [activeTab, contentMode]);
 
@@ -324,7 +329,7 @@ export default function SettingsPage() {
                   <li>VAPI call analyzed by Claude</li>
                   <li>Content brief generated (admin-only)</li>
                   <li>Admin creates posts manually</li>
-                  <li>No auto Predis/HeyGen/ElevenLabs calls</li>
+                  <li>No auto Predis/AutoContent calls</li>
                   <li>Client sees 48-hour message</li>
                 </ul>
               </div>
@@ -333,8 +338,8 @@ export default function SettingsPage() {
                 <ul className="text-xs text-neutral-600 space-y-1 list-disc list-inside">
                   <li>VAPI call analyzed by Claude</li>
                   <li>Social posts auto-generated via Predis</li>
-                  <li>Video auto-submitted to HeyGen</li>
-                  <li>Audio auto-rendered via ElevenLabs</li>
+                  <li>Video auto-rendered via AutoContent</li>
+                  <li>Audio auto-rendered via AutoContent</li>
                   <li>Content goes to client approval queue</li>
                 </ul>
               </div>

@@ -3,16 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { BillingPortalButton } from "@/components/dashboard/BillingPortalButton";
 
 const deliverables = [
-  "AI-generated social media posts (daily across all platforms)",
-  "Personalised AI video content via your HeyGen avatar",
-  "Audio podcast episodes in your cloned voice via ElevenLabs",
+  "AI-generated social media posts across all connected platforms",
+  "Personalised AI video shorts with your selected presenter avatar",
+  "AI podcast episodes generated for your brand",
   "Monthly performance & analytics report",
-];
-
-const invoices = [
-  { date: "Apr 1, 2026", amount: "$745.00", status: "Paid" },
-  { date: "Mar 1, 2026", amount: "$745.00", status: "Paid" },
-  { date: "Feb 1, 2026", amount: "$745.00", status: "Paid" },
 ];
 
 function formatDate(dateStr: string | null): string {
@@ -151,36 +145,15 @@ export default async function BillingPage() {
         </div>
       </div>
 
-      {/* Invoice History */}
+      {/* Invoice History — invoices live in Stripe; link out rather than show stale copies */}
       <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-4 sm:p-6">
-        <h3 className="text-base font-semibold text-neutral-900 mb-4">Invoice History</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-full">
-          <thead>
-            <tr className="text-xs font-semibold text-neutral-400 uppercase tracking-wide border-b border-neutral-100">
-              <th className="text-left pb-3">Date</th>
-              <th className="text-left pb-3">Amount</th>
-              <th className="text-left pb-3">Status</th>
-              <th className="text-right pb-3">Invoice</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoices.map((inv) => (
-              <tr key={inv.date} className="border-b border-neutral-50 last:border-0">
-                <td className="py-3 text-neutral-700">{inv.date}</td>
-                <td className="py-3 font-medium text-neutral-800">{inv.amount}</td>
-                <td className="py-3">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700">
-                    {inv.status}
-                  </span>
-                </td>
-                <td className="py-3 text-right">
-                  <BillingPortalButton label="Download" icon={<Download className="w-3 h-3" />} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          </table>
+        <h3 className="text-base font-semibold text-neutral-900 mb-2">Invoice History</h3>
+        <p className="text-sm text-neutral-500 mb-4">
+          Your full invoice and payment history is available in the Stripe billing portal.
+        </p>
+        <div className="flex items-center gap-2 text-sm text-neutral-400">
+          <Download className="w-4 h-4" />
+          <BillingPortalButton label="View invoices in billing portal" />
         </div>
       </div>
     </div>

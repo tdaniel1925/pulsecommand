@@ -159,8 +159,9 @@ export default function NotificationBell({ clientId }: { clientId: string }) {
 
   // Initial fetch + 30s poll
   useEffect(() => {
-    fetchNotifications()
-    const interval = setInterval(fetchNotifications, 30000)
+    const run = () => { void fetchNotifications() }
+    void Promise.resolve().then(run)
+    const interval = setInterval(run, 30000)
     return () => clearInterval(interval)
   }, [])
 

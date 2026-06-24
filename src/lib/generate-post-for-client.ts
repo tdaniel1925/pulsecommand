@@ -23,6 +23,11 @@ export function getWeekTopic(): string {
   return POST_TOPICS[weekNumber % POST_TOPICS.length];
 }
 
+/** Pick a topic by index so a batch of posts varies instead of repeating. */
+export function getTopicByIndex(index: number): string {
+  return POST_TOPICS[index % POST_TOPICS.length];
+}
+
 // ─── Claude caption generator ──────────────────────────────────────────────────
 
 type PlatformCaptions = {
@@ -77,11 +82,12 @@ Return ONLY valid JSON:
 // ─── Main exported function ────────────────────────────────────────────────────
 
 export async function generatePostForClient(
-  clientId: string
+  clientId: string,
+  opts?: { topic?: string }
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     const supabase = createAdminClient();
-    const weekTopic = getWeekTopic();
+    const weekTopic = opts?.topic ?? getWeekTopic();
     const monthBatch = new Date().toISOString().slice(0, 7);
 
     // Step 1: Fetch client row
@@ -185,8 +191,9 @@ export async function generatePostForClient(
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ postId: insertedPost.id }),
           });
-        } catch (publishErr: any) {
-          console.error(`[generate-post] Ayrshare publish failed for ${client.business_name}:`, publishErr.message);
+        } catch (publishErr: unknown) {
+          const msg = publishErr instanceof Error ? publishErr.message : String(publishErr);
+          console.error(`[generate-post] Ayrshare publish failed for ${client.business_name}:`, msg);
         }
       }
     }
@@ -221,8 +228,9 @@ export async function generatePostForClient(
           imageUrl: imageResult.imageUrl,
           postId: insertedPost.id,
         });
-      } catch (emailErr: any) {
-        console.error(`[generate-post] Email failed for ${client.business_name}:`, emailErr.message);
+      } catch (emailErr: unknown) {
+        const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
+        console.error(`[generate-post] Email failed for ${client.business_name}:`, msg);
       }
     }
 
@@ -234,8 +242,8 @@ export async function generatePostForClient(
     );
 
     return { ok: true };
-  } catch (err: any) {
-    const message = err?.message ?? String(err);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error(`[generate-post] ✗ clientId=${clientId}:`, message);
     return { ok: false, error: message };
   }

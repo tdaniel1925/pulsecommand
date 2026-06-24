@@ -58,7 +58,7 @@ export default function BrandAssetsPage() {
   const [primaryColor, setPrimaryColor] = useState('#2563eb')
   const [secondaryColor, setSecondaryColor] = useState('#1e40af')
 
-  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [, setLogoFile] = useState<File | null>(null)
   const [logoPreviewUrl, setLogoPreviewUrl] = useState('')
   const [logoStorageUrl, setLogoStorageUrl] = useState('')
   const [uploadingLogo, setUploadingLogo] = useState(false)
@@ -170,7 +170,7 @@ export default function BrandAssetsPage() {
         setSaving(false)
         return
       }
-      router.push('/onboarding/choose-avatar')
+      router.push('/onboarding/complete')
     } catch {
       setSaveError('Something went wrong. Please try again.')
       setSaving(false)
@@ -527,7 +527,7 @@ export default function BrandAssetsPage() {
           <div className="flex justify-end pb-10">
             <button onClick={handleContinue} disabled={saving}
               className="flex items-center gap-2 px-8 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm shadow-sm">
-              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : <>Continue to Avatar Video <ArrowRight className="w-4 h-4" /></>}
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : <>Finish Setup <ArrowRight className="w-4 h-4" /></>}
             </button>
           </div>
         </div>

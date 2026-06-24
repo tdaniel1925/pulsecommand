@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 
 const NAV_LINKS = [
   { label: "What's Included", anchor: "what-you-get" },
-  { label: "Add-Ons", anchor: "addons" },
+  { label: "How It Works", anchor: "how-it-works" },
   { label: "Pricing", anchor: "pricing" },
 ];
 
