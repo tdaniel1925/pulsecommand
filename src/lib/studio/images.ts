@@ -68,6 +68,12 @@ function buildPrompt(scene: string, brand: StudioBrand): string {
   )
 }
 
+const UPLOAD_RETRIES = 3
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 async function upload(
   clientId: string,
   pageKey: string,
@@ -79,12 +85,27 @@ async function upload(
   const path = `studio/${clientId}/${pageKey}_${Date.now()}.${ext}`
   const bucket = IMAGE_ENGINE_CONFIG.storage.bucket
 
-  const { error } = await admin.storage.from(bucket).upload(path, imageBuffer, {
-    contentType: mimeType,
-    upsert: true,
-  })
-  if (error) throw new Error(`Storage upload failed: ${error.message}`)
-
-  const { data } = admin.storage.from(bucket).getPublicUrl(path)
-  return data.publicUrl
+  // Storage uploads of large (~1-2MB) images occasionally hit transient network
+  // failures ("fetch failed"); retry a few times with backoff before giving up.
+  let lastErr = ''
+  for (let attempt = 1; attempt <= UPLOAD_RETRIES; attempt++) {
+    try {
+      const { error } = await admin.storage.from(bucket).upload(path, imageBuffer, {
+        contentType: mimeType,
+        upsert: true,
+      })
+      if (!error) {
+        const { data } = admin.storage.from(bucket).getPublicUrl(path)
+        return data.publicUrl
+      }
+      lastErr = error.message
+    } catch (err) {
+      lastErr = err instanceof Error ? err.message : String(err)
+    }
+    if (attempt < UPLOAD_RETRIES) {
+      console.warn(`[studio/images] upload attempt ${attempt} failed (${lastErr}); retrying...`)
+      await sleep(attempt * 700)
+    }
+  }
+  throw new Error(`Storage upload failed after ${UPLOAD_RETRIES} attempts: ${lastErr}`)
 }

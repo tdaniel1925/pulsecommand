@@ -11,21 +11,32 @@
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
-// NOTE: These are real OpenRouter free-tier slugs at time of writing.
-// OpenRouter's free model lineup changes over time — confirm against the
-// current model list (https://openrouter.ai/models?max_price=0) before
-// shipping to production, as free slugs can be retired without notice.
+// Real OpenRouter free-tier slugs, verified against the live model list.
+// IMPORTANT: the free tier is heavily rate-limited — any given slug frequently
+// returns 429. generateText() therefore tries each FREE_FALLBACKS slug in turn
+// and only then falls back to PAID Anthropic. Re-verify these against
+// https://openrouter.ai/models?max_price=0 periodically; free slugs rotate.
 export type OpenRouterModel =
+  | 'google/gemma-4-31b-it:free'
+  | 'google/gemma-4-26b-a4b-it:free'
+  | 'qwen/qwen3-next-80b-a3b-instruct:free'
   | 'meta-llama/llama-3.3-70b-instruct:free'
-  | 'qwen/qwen-2.5-72b-instruct:free'
-  | 'google/gemma-2-9b-it:free'
-  | 'mistralai/mistral-7b-instruct:free';
+  | 'nousresearch/hermes-3-llama-3.1-405b:free';
 
-// Default model — Llama 3.3 70B is strong at structured JSON output and content generation
-export const DEFAULT_MODEL: OpenRouterModel = 'meta-llama/llama-3.3-70b-instruct:free';
+// Default model for structured JSON / content generation.
+export const DEFAULT_MODEL: OpenRouterModel = 'google/gemma-4-31b-it:free';
 
-// Lighter model for simpler tasks (grading, short scripts, classification)
-export const LIGHT_MODEL: OpenRouterModel = 'google/gemma-2-9b-it:free';
+// Lighter model for simpler tasks (grading, short scripts, classification).
+export const LIGHT_MODEL: OpenRouterModel = 'google/gemma-4-26b-a4b-it:free';
+
+// Ordered free-model fallback chain. Tried in sequence on 429/404 before paying
+// for Anthropic. Larger/stronger first; lighter ones are more often available.
+const FREE_FALLBACKS: OpenRouterModel[] = [
+  'google/gemma-4-31b-it:free',
+  'qwen/qwen3-next-80b-a3b-instruct:free',
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'google/gemma-4-26b-a4b-it:free',
+];
 
 interface OpenRouterMessage {
   role: 'system' | 'user' | 'assistant';
@@ -48,6 +59,8 @@ export async function generateText(params: {
   messages: OpenRouterMessage[];
   maxTokens?: number;
   temperature?: number;
+  /** Internal: free models already attempted, to walk the fallback chain once. */
+  _tried?: OpenRouterModel[];
 }): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
@@ -72,24 +85,29 @@ export async function generateText(params: {
 
   if (!response.ok) {
     const errorText = await response.text();
-    // Retry once with fallback model on rate limit or 404
-    if ((response.status === 429 || response.status === 404) && (params.model ?? DEFAULT_MODEL) !== LIGHT_MODEL) {
-      console.warn(
-        `[openrouter] free model ${params.model ?? DEFAULT_MODEL} failed (status ${response.status}), ` +
-        `retrying with free fallback model ${LIGHT_MODEL}...`
-      );
-      await new Promise(r => setTimeout(r, 1500));
-      return generateText({ ...params, model: LIGHT_MODEL });
+    const triedModel = params.model ?? DEFAULT_MODEL;
+
+    // On rate-limit/not-found, walk the remaining free fallback chain before paying.
+    if (response.status === 429 || response.status === 404) {
+      const remaining = FREE_FALLBACKS.filter((m) => m !== triedModel && !(params._tried ?? []).includes(m));
+      if (remaining.length > 0) {
+        const next = remaining[0];
+        console.warn(
+          `[openrouter] free model ${triedModel} failed (status ${response.status}), ` +
+          `trying next free model ${next}...`
+        );
+        await new Promise((r) => setTimeout(r, 800));
+        return generateText({ ...params, model: next, _tried: [...(params._tried ?? []), triedModel] });
+      }
     }
-    // Final fallback: try Anthropic if available
+
+    // All free models exhausted — fall back to PAID Anthropic if available.
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     const ANTHROPIC_FALLBACK_MODEL = 'claude-sonnet-4-6';
     if (anthropicKey && (response.status === 429 || response.status === 404)) {
-      const triedModel = params.model ?? DEFAULT_MODEL;
       console.warn(
-        `[openrouter] free model ${triedModel} (and fallback ${LIGHT_MODEL}) failed ` +
-        `(status ${response.status}), falling back to PAID Anthropic ${ANTHROPIC_FALLBACK_MODEL}. ` +
-        `This call WILL incur cost.`
+        `[openrouter] all free models exhausted (last status ${response.status}), ` +
+        `falling back to PAID Anthropic ${ANTHROPIC_FALLBACK_MODEL}. This call WILL incur cost.`
       );
       const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
