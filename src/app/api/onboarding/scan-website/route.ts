@@ -1,3 +1,6 @@
+export const maxDuration = 60
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { normalizeWebsiteUrl, assertPublicUrl } from '@/lib/validation'
