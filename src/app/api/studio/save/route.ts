@@ -12,7 +12,7 @@ import { normalizeLayout } from '@/components/studio/blocks/registry'
  */
 export async function POST(request: NextRequest) {
   try {
-    const { pageId, goal, content, theme, title, kit, layout } = await request.json()
+    const { pageId, goal, content, theme, title, kit, layout, variants } = await request.json()
 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -35,18 +35,18 @@ export async function POST(request: NextRequest) {
       content: safeContent,
       theme: theme ?? {},
       layout: Array.isArray(layout) ? normalizeLayout(layout) : null,
+      variants: variants && typeof variants === 'object' ? variants : null,
       updated_at: new Date().toISOString(),
     }
 
-    // If the studio_pages_layout migration hasn't run yet, the `layout` column
-    // won't exist. PostgREST reports this as PGRST204 ("Could not find the
-    // 'layout' column ... in the schema cache"); raw PG would be 42703. Catch
-    // both and retry once without layout so saving still works pre-migration.
-    const isMissingLayoutCol = (e: { code?: string; message?: string } | null) =>
+    // The layout/variants columns may not exist yet (migrations not run). PostgREST
+    // reports a missing column as PGRST204; raw PG as 42703. Drop whichever column
+    // is missing and retry, so saving still works pre-migration.
+    const missingCol = (e: { code?: string; message?: string } | null, col: string) =>
       !!e && (
         e.code === '42703' ||
         e.code === 'PGRST204' ||
-        /(column|find).*['"]?layout['"]?.* (does not exist|in the schema cache)/i.test(e.message ?? '')
+        new RegExp(`(column|find).*['"]?${col}['"]?.* (does not exist|in the schema cache)`, 'i').test(e.message ?? '')
       )
 
     const write = async (r: Record<string, unknown>) =>
@@ -54,14 +54,16 @@ export async function POST(request: NextRequest) {
         ? admin.from('studio_pages').update(r).eq('id', pageId).eq('client_id', client.id).select('id').single()
         : admin.from('studio_pages').insert(r).select('id').single()
 
-    let { data, error } = await write(row)
-    if (error && isMissingLayoutCol(error)) {
-      const { layout: _omit, ...rowNoLayout } = row
-      void _omit
-      ;({ data, error } = await write(rowNoLayout))
+    const attempt: Record<string, unknown> = { ...row }
+    let res = await write(attempt)
+    for (const col of ['layout', 'variants']) {
+      if (res.error && missingCol(res.error, col)) {
+        delete attempt[col]
+        res = await write(attempt)
+      }
     }
-    if (error) throw error
-    return NextResponse.json({ id: data!.id })
+    if (res.error) throw res.error
+    return NextResponse.json({ id: res.data!.id })
   } catch (err) {
     console.error('[studio/save]', err)
     return NextResponse.json({ error: 'Failed to save' }, { status: 500 })

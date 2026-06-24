@@ -19,14 +19,15 @@ export default function StudioNewPage() {
   const [content, setContent] = useState<KitContent | null>(null);
   const [theme, setTheme] = useState<ThemeProps>({});
   const [layout, setLayout] = useState<BlockType[]>(DEFAULT_LAYOUT);
+  const [variants, setVariants] = useState<Record<string, string>>({});
   const [pageId, setPageId] = useState<string | null>(null);
   const [liveUrl, setLiveUrl] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [savingDraft, setSavingDraft] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounced autosave: persist content/theme/layout edits ~800ms after the last change.
-  const scheduleSave = useCallback((c: KitContent, t: ThemeProps, l: BlockType[], id: string | null) => {
+  // Debounced autosave: persist content/theme/layout/variants edits ~800ms after the last change.
+  const scheduleSave = useCallback((c: KitContent, t: ThemeProps, l: BlockType[], vr: Record<string, string>, id: string | null) => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       setSavingDraft(true);
@@ -34,7 +35,7 @@ export default function StudioNewPage() {
         const res = await fetch("/api/studio/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pageId: id, goal, content: c, theme: t, kit, layout: l }),
+          body: JSON.stringify({ pageId: id, goal, content: c, theme: t, kit, layout: l, variants: vr }),
         });
         const data = await res.json();
         if (res.ok && data.id && !id) setPageId(data.id);
@@ -48,16 +49,20 @@ export default function StudioNewPage() {
 
   function updateContent(next: KitContent) {
     setContent(next);
-    scheduleSave(next, theme, layout, pageId);
+    scheduleSave(next, theme, layout, variants, pageId);
   }
   function updateTheme(next: ThemeProps) {
     setTheme(next);
-    if (content) scheduleSave(content, next, layout, pageId);
+    if (content) scheduleSave(content, next, layout, variants, pageId);
   }
   function updateLayout(next: BlockType[]) {
     const safe = normalizeLayout(next);
     setLayout(safe);
-    if (content) scheduleSave(content, theme, safe, pageId);
+    if (content) scheduleSave(content, theme, safe, variants, pageId);
+  }
+  function updateVariants(next: Record<string, string>) {
+    setVariants(next);
+    if (content) scheduleSave(content, theme, layout, next, pageId);
   }
 
   async function handleGenerate() {
@@ -84,7 +89,7 @@ export default function StudioNewPage() {
       const saveRes = await fetch("/api/studio/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ goal, content: data.content, theme: data.theme, kit, layout: composedLayout }),
+        body: JSON.stringify({ goal, content: data.content, theme: data.theme, kit, layout: composedLayout, variants }),
       });
       const saved = await saveRes.json();
       if (saveRes.ok) setPageId(saved.id);
@@ -189,14 +194,14 @@ export default function StudioNewPage() {
         <div className="flex-1 flex min-h-0">
           {/* Editor pane: sections (layout) + design + copy */}
           <aside className="w-80 flex-shrink-0 bg-white border-r border-neutral-200 overflow-y-auto p-5 space-y-6">
-            <LayoutEditor content={content} layout={layout} onLayoutChange={updateLayout} />
+            <LayoutEditor content={content} layout={layout} variants={variants} onLayoutChange={updateLayout} onVariantsChange={updateVariants} />
             <div className="border-t border-neutral-100" />
-            <StudioEditor content={content} theme={theme} onContentChange={updateContent} onThemeChange={updateTheme} />
+            <StudioEditor content={content} theme={theme} goal={goal} onContentChange={updateContent} onThemeChange={updateTheme} />
           </aside>
 
           {/* Live preview — the canvas, full-bleed, exactly as it will publish */}
           <main className="flex-1 overflow-y-auto bg-white">
-            <CanvasPage content={content} theme={theme} layout={layout} />
+            <CanvasPage content={content} theme={theme} layout={layout} variants={variants} />
           </main>
         </div>
       </div>

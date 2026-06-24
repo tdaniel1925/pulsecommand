@@ -17,12 +17,16 @@ export function CanvasPage({
   content,
   theme,
   layout,
+  variants,
 }: {
   content: KitContent
   theme: ThemeProps
   layout: BlockType[] | unknown
+  /** Optional per-block variant id, e.g. { hero: "centered" }. */
+  variants?: Record<string, string> | null
 }) {
   const blocks = normalizeLayout(layout)
+  const v = variants ?? {}
 
   const root: CSSProperties = {
     ...tokenStyle(theme),
@@ -38,7 +42,7 @@ export function CanvasPage({
     <div style={root}>
       {blocks.map((type, i) => {
         const Block = BLOCKS[type].Component
-        return <Block key={`${type}-${i}`} content={content} theme={theme} />
+        return <Block key={`${type}-${i}`} content={content} theme={theme} variant={v[type]} />
       })}
     </div>
   )

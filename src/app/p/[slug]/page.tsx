@@ -16,6 +16,7 @@ interface StudioPage {
   theme: ThemeProps
   kit: string | null
   layout: unknown
+  variants: unknown
 }
 interface LegacyPage {
   source: 'legacy'
@@ -46,6 +47,7 @@ async function getPage(slug: string): Promise<PageRow | null> {
       theme: (sp.theme ?? {}) as ThemeProps,
       kit: (sp.kit as string | null) ?? null,
       layout: sp.layout ?? null,
+      variants: sp.variants ?? null,
     }
   }
 
@@ -95,7 +97,7 @@ export default async function PublicLandingPage(
     return (
       <>
         <link rel="stylesheet" href={FONTS_HREF} />
-        <CanvasPage content={content} theme={page.theme} layout={page.layout} />
+        <CanvasPage content={content} theme={page.theme} layout={page.layout} variants={page.variants as Record<string, string> | null} />
       </>
     )
   }

@@ -21,11 +21,15 @@ import {
 export function LayoutEditor({
   content,
   layout,
+  variants,
   onLayoutChange,
+  onVariantsChange,
 }: {
   content: KitContent;
   layout: BlockType[];
+  variants: Record<string, string>;
   onLayoutChange: (next: BlockType[]) => void;
+  onVariantsChange: (next: Record<string, string>) => void;
 }) {
   const [adding, setAdding] = useState(false);
 
@@ -59,11 +63,13 @@ export function LayoutEditor({
         {body.map((type, i) => {
           const meta = BLOCKS[type];
           const unmet = meta.needs && !meta.needs(content);
+          const activeVariant = variants[type] ?? meta.variants?.[0]?.id;
           return (
             <li
               key={`${type}-${i}`}
-              className="flex items-center gap-2 px-2.5 py-2 rounded-lg border border-neutral-200 bg-white"
+              className="px-2.5 py-2 rounded-lg border border-neutral-200 bg-white"
             >
+            <div className="flex items-center gap-2">
               <span className="flex-1 min-w-0">
                 <span className="block text-sm font-medium text-neutral-800 truncate">{meta.label}</span>
                 {unmet && (
@@ -95,6 +101,25 @@ export function LayoutEditor({
                   <X className="w-4 h-4" />
                 </button>
               </div>
+            </div>
+            {meta.variants && meta.variants.length > 1 && (
+              <div className="flex gap-1 mt-2">
+                {meta.variants.map((vr) => {
+                  const on = activeVariant === vr.id;
+                  return (
+                    <button
+                      key={vr.id}
+                      onClick={() => onVariantsChange({ ...variants, [type]: vr.id })}
+                      className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                        on ? "bg-primary-600 text-white" : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                      }`}
+                    >
+                      {vr.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             </li>
           );
         })}

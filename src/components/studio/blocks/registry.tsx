@@ -33,13 +33,20 @@ export type BlockType =
   | 'cta'
   | 'footer'
 
-type BlockComponent = ComponentType<{ content: KitContent; theme: ThemeProps }>
+type BlockComponent = ComponentType<{ content: KitContent; theme: ThemeProps; variant?: string }>
+
+export interface BlockVariant {
+  id: string
+  label: string
+}
 
 export interface BlockMeta {
   type: BlockType
   /** Human label shown in the add/reorder menu. */
   label: string
   Component: BlockComponent
+  /** Visual variants the user can switch between (first = default). */
+  variants?: BlockVariant[]
   /** Structural blocks are always present and can't be removed/reordered. */
   pinned?: 'top' | 'bottom'
   /**
@@ -60,7 +67,7 @@ export interface BlockMeta {
  */
 export const BLOCKS: Record<BlockType, BlockMeta> = {
   header: { type: 'header', label: 'Header', Component: HeaderBlock, pinned: 'top', hint: 'Logo + navigation' },
-  hero: { type: 'hero', label: 'Hero', Component: HeroBlock, hint: 'Headline, subhead, primary call-to-action' },
+  hero: { type: 'hero', label: 'Hero', Component: HeroBlock, hint: 'Headline, subhead, primary call-to-action', variants: [{ id: 'split', label: 'Split' }, { id: 'centered', label: 'Centered' }] },
   socialProof: { type: 'socialProof', label: 'Social proof', Component: SocialProofBlock, hint: 'Trusted-by logos' },
   features: { type: 'features', label: 'Features', Component: FeaturesBlock, hint: 'A trio of key benefits' },
   stats: { type: 'stats', label: 'Stats', Component: StatsBlock, needs: (c) => !!c.stats?.length, hint: 'Headline numbers' },
