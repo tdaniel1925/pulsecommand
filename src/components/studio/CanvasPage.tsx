@@ -1,4 +1,6 @@
-import type { CSSProperties } from 'react'
+'use client'
+
+import { useEffect, useRef, type CSSProperties } from 'react'
 import { tokenStyle, type ThemeProps } from '@/lib/studio/theme'
 import type { KitContent } from '@/lib/studio/kit-schema'
 import { BLOCKS, normalizeLayout, type BlockType } from './blocks/registry'
@@ -27,6 +29,47 @@ export function CanvasPage({
 }) {
   const blocks = normalizeLayout(layout)
   const v = variants ?? {}
+  const rootRef = useRef<HTMLDivElement>(null)
+
+  // Scroll-reveal. CRITICAL: blocks start at opacity:0 (.sx-reveal) and only
+  // become visible once .sx-in is added. The inline <script> approach only fires
+  // on a full server-rendered page load, so in the CLIENT editor preview (where
+  // content is injected via React state) it never ran → the whole canvas stayed
+  // invisible. This effect re-runs on every content/layout change, observes
+  // against the actual scroll container, and ALWAYS fails safe to visible.
+  useEffect(() => {
+    const rootEl = rootRef.current
+    if (!rootEl) return
+    // Arm reveal only now that JS is running — until this class is present the
+    // CSS keeps .sx-reveal fully visible, so no-JS / pre-hydration is never blank.
+    rootEl.classList.add('sx-armed')
+    const els = Array.from(rootEl.querySelectorAll<HTMLElement>('.sx-reveal'))
+    if (els.length === 0) return
+
+    // Find the nearest scrollable ancestor (the editor's <main> or the window).
+    let scrollParent: Element | null = rootEl.parentElement
+    while (scrollParent && scrollParent !== document.body) {
+      const oy = getComputedStyle(scrollParent).overflowY
+      if (oy === 'auto' || oy === 'scroll') break
+      scrollParent = scrollParent.parentElement
+    }
+
+    const reveal = (el: Element) => el.classList.add('sx-in')
+    if (!('IntersectionObserver' in window)) {
+      els.forEach(reveal)
+      return
+    }
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target) } }),
+      { root: scrollParent === document.body ? null : scrollParent, threshold: 0.08, rootMargin: '0px 0px -6% 0px' },
+    )
+    els.forEach((el) => io.observe(el))
+
+    // Safety net: if anything goes wrong, reveal everything after a beat so the
+    // page can never stay blank.
+    const failsafe = setTimeout(() => els.forEach(reveal), 1200)
+    return () => { io.disconnect(); clearTimeout(failsafe) }
+  }, [content, blocks.length, theme])
 
   const root: CSSProperties = {
     ...tokenStyle(theme),
@@ -39,7 +82,7 @@ export function CanvasPage({
   }
 
   return (
-    <div className="sx-root" style={root}>
+    <div ref={rootRef} className="sx-root" style={root}>
       <CanvasStyles />
       {blocks.map((type, i) => {
         const Block = BLOCKS[type].Component
@@ -66,19 +109,17 @@ function CanvasStyles() {
 .sx-lift:hover{transform:translateY(-4px);box-shadow:var(--hover-shadow,0 22px 60px rgba(0,0,0,.12))}
 .sx-link{transition:opacity .15s ease,color .15s ease}
 .sx-link:hover{opacity:1;color:var(--accent)}
-/* Scroll reveal */
-.sx-reveal{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.3,1),transform .6s cubic-bezier(.2,.7,.3,1)}
-.sx-reveal.sx-in{opacity:1;transform:none}
-@media (prefers-reduced-motion: reduce){.sx-reveal{opacity:1;transform:none;transition:none}.sx-btn,.sx-lift{transition:none}}
+/* Scroll reveal — only hidden once JS arms the root (.sx-armed); otherwise the
+   content is fully visible, so the page can never render blank without JS. */
+.sx-armed .sx-reveal{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.3,1),transform .6s cubic-bezier(.2,.7,.3,1)}
+.sx-armed .sx-reveal.sx-in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){.sx-armed .sx-reveal{opacity:1;transform:none;transition:none}.sx-btn,.sx-lift{transition:none}}
 /* Subtle grain texture overlay for accent bands */
 .sx-grain{position:relative;isolation:isolate}
 .sx-grain::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E")}
 `.trim()
-  const reveal = `(function(){try{var els=document.querySelectorAll('.sx-reveal');if(!('IntersectionObserver'in window)){els.forEach(function(e){e.classList.add('sx-in')});return}var o=new IntersectionObserver(function(en){en.forEach(function(x){if(x.isIntersecting){x.target.classList.add('sx-in');o.unobserve(x.target)}})},{threshold:.12,rootMargin:'0px 0px -8% 0px'});els.forEach(function(e){o.observe(e)})}catch(e){document.querySelectorAll('.sx-reveal').forEach(function(x){x.classList.add('sx-in')})}})();`
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: css }} />
-      <script dangerouslySetInnerHTML={{ __html: reveal }} />
-    </>
-  )
+  // Reveal is handled by CanvasPage's useEffect (arms .sx-armed, observes against
+  // the real scroll container, fails safe to visible) — works in both the client
+  // editor preview and the hydrated published page.
+  return <style dangerouslySetInnerHTML={{ __html: css }} />
 }
