@@ -51,11 +51,15 @@ export default function StudioNewPage() {
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("page");
     if (!id) return;
+    let alive = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: show the loader immediately while we fetch the saved page
     setPhase("generating");
-    fetch(`/api/studio/page/${id}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) { setError("Could not load that page."); setPhase("input"); return; }
+    (async () => {
+      try {
+        const r = await fetch(`/api/studio/page/${id}`);
+        const d = await r.json();
+        if (!alive) return;
+        if (!r.ok || d.error || !d.content) { setError("Could not load that page."); setPhase("input"); return; }
         setContent(d.content);
         setTheme(d.theme ?? {});
         setLayout(normalizeLayout(d.layout));
@@ -65,8 +69,11 @@ export default function StudioNewPage() {
         setPageId(d.id);
         if (d.status === "live" && d.url) setLiveUrl(d.url);
         setPhase(d.status === "live" ? "published" : "preview");
-      })
-      .catch(() => { setError("Could not load that page."); setPhase("input"); });
+      } catch {
+        if (alive) { setError("Could not load that page."); setPhase("input"); }
+      }
+    })();
+    return () => { alive = false; };
   }, []);
 
   function updateContent(next: KitContent) {
@@ -94,14 +101,22 @@ export default function StudioNewPage() {
     }
     setError("");
     setPhase("generating");
+    // Guard the request: if it hangs (network/cold start), surface an error
+    // instead of leaving the user on an endless spinner that looks broken.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 75_000);
     try {
       const res = await fetch("/api/studio/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ goal }),
+        signal: ctrl.signal,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Generation failed");
+      let data: { content?: KitContent; theme?: ThemeProps; layout?: BlockType[]; variants?: Record<string, string>; error?: string } = {};
+      try { data = await res.json(); } catch { /* non-JSON error body */ }
+      if (!res.ok || !data.content) {
+        throw new Error(data.error ?? `Generation failed (${res.status}). Please try again.`);
+      }
       setContent(data.content);
       setTheme(data.theme ?? {});
       const composedLayout = normalizeLayout(data.layout);
@@ -125,8 +140,13 @@ export default function StudioNewPage() {
       // fast and avoids the Vercel function timeout.
       void fillImagesInBackground(data.content);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      const aborted = e instanceof DOMException && e.name === "AbortError";
+      setError(aborted
+        ? "That took too long and timed out. Please try again."
+        : e instanceof Error ? e.message : "Something went wrong");
       setPhase("input");
+    } finally {
+      clearTimeout(timer);
     }
   }
 

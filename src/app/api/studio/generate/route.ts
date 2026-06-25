@@ -4,7 +4,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { generateJSON, DEFAULT_MODEL } from '@/lib/openrouter'
+import { generateJSON } from '@/lib/openrouter'
 import { normalizeKitContent, KIT_LIMITS, type KitContent } from '@/lib/studio/kit-schema'
 import { deriveThemeFromBrand, type ThemeProps } from '@/lib/studio/theme'
 import { composeLayout, composeVariants } from '@/components/studio/blocks/registry'
@@ -49,7 +49,10 @@ export async function POST(request: NextRequest) {
     try {
       raw = await generateJSON({
         system: 'You are a senior conversion copywriter for high-end brands. You write specific, confident, benefit-led copy — never generic SaaS filler. Return ONLY valid JSON, no prose, no markdown.',
-        quality: 'high', // one-shot full page — use the stronger model
+        // Haiku 4.5 (the default fast path) — the detailed prompt below already
+        // enforces the quality bar, and Haiku returns in ~6-10s vs ~28s for Sonnet,
+        // which keeps the request well under the Vercel function limit and stops
+        // the builder from feeling broken while the user waits.
         maxTokens: 4096,
         prompt: `Write the CONTENT for one landing page. Return ONLY JSON in the exact shape below — text only, no design, no HTML.
 
