@@ -1,13 +1,8 @@
 import { Check, Download, CreditCard } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { BillingPortalButton } from "@/components/dashboard/BillingPortalButton";
-
-const deliverables = [
-  "AI-generated social media posts across all connected platforms",
-  "Personalised AI video shorts with your selected presenter avatar",
-  "AI podcast episodes generated for your brand",
-  "Monthly performance & analytics report",
-];
+import { resolveClientPlan, PLAN_SELECT } from "@/lib/plan";
+import { PUBLIC_PLAN } from "@/lib/stripe";
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—";
@@ -46,25 +41,23 @@ function statusLabel(status: string | null): string {
 export default async function BillingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  // Billing state lives on the `clients` row (written by the Stripe webhook +
+  // provisioning) — the single source of truth.
   const { data: client } = await supabase
     .from("clients")
-    .select("id")
+    .select(`id, subscription_status, trial_end, ${PLAN_SELECT}`)
     .eq("user_id", user?.id ?? "")
     .single();
 
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("*")
-    .eq("client_id", client?.id ?? "")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
-
-  const planName = subscription?.plan_name ?? "BundledContent";
-  const planAmount = subscription?.amount ?? 745;
-  const planInterval = subscription?.interval ?? "month";
-  const subStatus = subscription?.status ?? null;
-  const nextBillingDate = formatDate(subscription?.current_period_end ?? null);
+  const plan = (client ? resolveClientPlan(client) : null) ?? PUBLIC_PLAN;
+  const planName = plan.name;
+  const planAmount = plan.price;
+  const planInterval = "month";
+  const subStatus = (client?.subscription_status as string | null) ?? null;
+  // We don't store the next billing date locally; trial end is the closest signal.
+  const trialEnd = client?.trial_end as string | null;
+  const nextBillingDate = formatDate(trialEnd ?? null);
+  const deliverables = plan.features;
 
   return (
     <div className="max-w-2xl flex flex-col gap-6 sm:gap-8">
@@ -96,8 +89,10 @@ export default async function BillingPage() {
 
         <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center justify-between">
           <p className="text-sm text-neutral-500">
-            {subscription?.current_period_end
-              ? <>Next billing date: <span className="font-semibold text-neutral-700">{nextBillingDate}</span></>
+            {subStatus === "trialing" && trialEnd
+              ? <>Trial ends: <span className="font-semibold text-neutral-700">{nextBillingDate}</span></>
+              : subStatus === "active"
+              ? <span className="text-neutral-500">Renews monthly · manage in the billing portal</span>
               : <span className="text-neutral-400">No active billing period</span>
             }
           </p>
@@ -129,16 +124,8 @@ export default async function BillingPage() {
               <CreditCard className="w-4 h-4 text-neutral-500" />
             </div>
             <div>
-              <p className="text-sm font-medium text-neutral-800">
-                {subscription?.card_brand && subscription?.card_last4
-                  ? `${subscription.card_brand} ending in ${subscription.card_last4}`
-                  : "Managed via Stripe"}
-              </p>
-              <p className="text-xs text-neutral-400">
-                {subscription?.card_exp_month && subscription?.card_exp_year
-                  ? `Expires ${String(subscription.card_exp_month).padStart(2, "0")} / ${String(subscription.card_exp_year).slice(-2)}`
-                  : "Update via Manage Subscription"}
-              </p>
+              <p className="text-sm font-medium text-neutral-800">Managed securely via Stripe</p>
+              <p className="text-xs text-neutral-400">Update your card in the billing portal</p>
             </div>
           </div>
           <BillingPortalButton label="Update" />

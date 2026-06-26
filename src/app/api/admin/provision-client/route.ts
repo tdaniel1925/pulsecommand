@@ -121,7 +121,11 @@ export async function POST(req: NextRequest) {
           success_url: `${base}/dashboard?welcome=1`,
           cancel_url: `${base}/dashboard`,
           metadata: { clientId: client.id, planId: plan.id },
-          subscription_data: { metadata: { clientId: client.id, planId: plan.id } },
+          subscription_data: {
+            metadata: { clientId: client.id, planId: plan.id },
+            // Honor the admin-chosen trial; Stripe auto-charges when it ends.
+            ...(body.trialDays && body.trialDays > 0 ? { trial_period_days: body.trialDays } : {}),
+          },
           allow_promotion_codes: true,
         })
         checkoutUrl = session.url

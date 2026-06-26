@@ -30,7 +30,8 @@ export default async function SettingsPage() {
         zernio_profile_id: client.zernio_profile_id ?? null,
         zernio_connected_platforms: client.zernio_connected_platforms ?? null,
         plan_name: client.plan_name ?? null,
-        plan_status: client.plan_status ?? null,
+        // plan_status column is unused; surface the real subscription_status.
+        plan_status: client.subscription_status ?? null,
         presentations_used: client.presentations_used ?? 0,
         presentations_limit: client.presentations_limit ?? 0,
       }}

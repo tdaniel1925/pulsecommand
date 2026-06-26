@@ -193,6 +193,20 @@ export async function POST(request: NextRequest) {
         break
       }
 
+      case 'invoice.paid':
+      case 'invoice.payment_succeeded': {
+        // A renewal (or first charge) succeeded → ensure the client is active.
+        // Recovers a past_due client and confirms ongoing subscriptions.
+        const invoice = event.data.object as Stripe.Invoice
+        if (invoice.customer) {
+          await admin
+            .from('clients')
+            .update({ subscription_status: 'active' })
+            .eq('stripe_customer_id', invoice.customer as string)
+        }
+        break
+      }
+
       default:
         console.log('Unhandled Stripe event type:', event.type)
     }

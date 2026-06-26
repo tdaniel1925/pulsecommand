@@ -28,8 +28,8 @@ interface Client {
   zernio_profile_id: string | null;
   zernio_connected_platforms: string[] | null;
   plan_name: string | null;
-  plan_status: string | null;
-  plan_period_end: string | null;
+  subscription_status: string | null;
+  trial_end: string | null;
   stripe_customer_id: string | null;
   presentations_used: number | null;
   presentations_limit: number | null;

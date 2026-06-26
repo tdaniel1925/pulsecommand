@@ -19,7 +19,7 @@ export default async function AdminClientDetailPage({
     supabase
       .from("clients")
       .select(
-        "id, business_name, email, status, created_at, metadata, zernio_profile_id, zernio_connected_platforms, plan_name, plan_status, plan_period_end, stripe_customer_id, presentations_used, presentations_limit"
+        "id, business_name, email, status, created_at, metadata, zernio_profile_id, zernio_connected_platforms, plan_name, subscription_status, trial_end, stripe_customer_id, presentations_used, presentations_limit"
       )
       .eq("id", id)
       .single(),

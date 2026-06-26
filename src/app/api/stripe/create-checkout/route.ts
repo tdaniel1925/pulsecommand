@@ -57,7 +57,9 @@ export async function POST(req: NextRequest) {
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?upgraded=1`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
       metadata: { clientId: client.id, planId },
-      subscription_data: { metadata: { clientId: client.id, planId } },
+      // 14-day free trial handled natively by Stripe: the card is collected now,
+      // and Stripe auto-charges when the trial ends (converting trial → paid).
+      subscription_data: { metadata: { clientId: client.id, planId }, trial_period_days: 14 },
       allow_promotion_codes: true,
     })
 
