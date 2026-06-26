@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { AutoApproveToggle } from "@/components/dashboard/AutoApproveToggle";
+import { PausePostingToggle } from "@/components/dashboard/PausePostingToggle";
 import { SocialViewToggle } from "@/components/dashboard/SocialViewToggle";
 
 export default async function SocialPage() {
@@ -7,9 +8,15 @@ export default async function SocialPage() {
   const { data: { user } } = await supabase.auth.getUser();
   const { data: client } = await supabase
     .from("clients")
-    .select("id, auto_approve")
+    .select("id, auto_approve, metadata")
     .eq("user_id", user?.id ?? "")
     .single();
+
+  const postingPaused = Boolean(
+    client?.metadata && typeof client.metadata === "object"
+      ? (client.metadata as Record<string, unknown>).posting_paused
+      : false
+  );
 
   const { data: posts } = await supabase
     .from("social_posts")
@@ -39,10 +46,13 @@ export default async function SocialPage() {
           <p className="text-sm text-neutral-500 mt-1">Your AI-generated content across all platforms.</p>
         </div>
         {client && (
-          <AutoApproveToggle
-            clientId={client.id}
-            defaultValue={client.auto_approve ?? true}
-          />
+          <div className="flex items-center gap-2 flex-wrap">
+            <PausePostingToggle defaultPaused={postingPaused} />
+            <AutoApproveToggle
+              clientId={client.id}
+              defaultValue={client.auto_approve ?? true}
+            />
+          </div>
         )}
       </div>
 

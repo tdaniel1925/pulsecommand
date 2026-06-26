@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { LifeBuoy } from "lucide-react";
 import DashboardNav from "@/components/dashboard/DashboardNav";
 import { LogoutButton } from "@/components/dashboard/LogoutButton";
 import NotificationBell from "@/components/dashboard/NotificationBell";
@@ -38,6 +39,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
         {/* Nav */}
         <DashboardNav />
+
+        {/* Support */}
+        <div className="px-3 pb-2">
+          <a
+            href="mailto:support@bundledcontent.com"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"
+          >
+            <LifeBuoy className="w-4 h-4 flex-shrink-0 text-neutral-400" />
+            Help &amp; Support
+          </a>
+        </div>
 
         {/* Bottom client area */}
         <div className="px-3 py-4 border-t border-neutral-100">

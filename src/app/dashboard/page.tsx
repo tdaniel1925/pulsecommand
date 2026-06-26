@@ -5,9 +5,6 @@ import {
   Settings,
   CheckCircle,
   FileText,
-  Globe,
-  Mic,
-  PlayCircle,
   Sparkles,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -299,10 +296,9 @@ export default async function DashboardPage() {
                 // Pick icon based on activity type
                 const iconMap: Record<string, { icon: React.ElementType; color: string }> = {
                   post: { icon: CheckCircle, color: "text-green-600" },
-                  video: { icon: PlayCircle, color: "text-violet-600" },
+                  billing: { icon: FileText, color: "text-blue-600" },
                   report: { icon: FileText, color: "text-blue-600" },
-                  page: { icon: Globe, color: "text-green-600" },
-                  audio: { icon: Mic, color: "text-orange-600" },
+                  onboarding_step: { icon: Sparkles, color: "text-violet-600" },
                 };
                 const typeKey = item.type ?? "post";
                 const { icon: Icon, color } = iconMap[typeKey] ?? { icon: CheckCircle, color: "text-neutral-500" };

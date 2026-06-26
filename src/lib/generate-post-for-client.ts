@@ -104,12 +104,19 @@ export async function generatePostForClient(
     // Step 1: Fetch client row
     const { data: client, error: clientError } = await supabase
       .from("clients")
-      .select("id, business_name, website, brand_vibe, email, zernio_profile_id, auto_approve")
+      .select("id, business_name, website, brand_vibe, email, zernio_profile_id, auto_approve, metadata")
       .eq("id", clientId)
       .single();
 
     if (clientError || !client) {
       return { ok: false, error: clientError?.message ?? "Client not found" };
+    }
+
+    // Respect the client's pause switch for automatic (cron) generation. On-demand
+    // generation (mode:'draft') is always allowed.
+    const meta = (client.metadata && typeof client.metadata === "object" ? client.metadata : {}) as Record<string, unknown>;
+    if (mode === "auto" && meta.posting_paused === true) {
+      return { ok: false, error: "Posting is paused for this client." };
     }
 
     // Step 2: Fetch brand profile

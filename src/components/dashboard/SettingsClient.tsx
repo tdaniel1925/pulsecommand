@@ -609,7 +609,6 @@ function NotificationsTab({
   const saved = client.metadata?.notifications ?? {};
   const [postReady, setPostReady] = useState(saved.post_ready ?? true);
   const [postPublished, setPostPublished] = useState(saved.post_published ?? true);
-  const [videoReady, setVideoReady] = useState(saved.video_ready ?? true);
   const [weeklySummary, setWeeklySummary] = useState(saved.weekly_summary ?? true);
   const [monthlyReport, setMonthlyReport] = useState(saved.monthly_report ?? true);
   const [loading, setLoading] = useState(false);
@@ -624,7 +623,6 @@ function NotificationsTab({
           notifications: {
             post_ready: postReady,
             post_published: postPublished,
-            video_ready: videoReady,
             weekly_summary: weeklySummary,
             monthly_report: monthlyReport,
           },
@@ -652,12 +650,6 @@ function NotificationsTab({
         onChange={setPostPublished}
         label="Email when post is published"
         description="Confirmation when a post goes live on your social channels."
-      />
-      <Toggle
-        checked={videoReady}
-        onChange={setVideoReady}
-        label="Email when video is ready"
-        description="Get notified when a new video has been created for you."
       />
       <Toggle
         checked={weeklySummary}
