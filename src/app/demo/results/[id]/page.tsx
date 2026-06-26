@@ -7,6 +7,7 @@ import Image from "next/image";
 import {
   Zap, Clock, ArrowRight, CheckCircle, TrendingUp
 } from "lucide-react";
+import { PUBLIC_PLAN, formatPrice } from "@/lib/stripe";
 
 type DemoData = {
   id: string;
@@ -42,14 +43,14 @@ function getDiscountTier(createdAt: string): DiscountTier {
   const created = new Date(createdAt).getTime();
   const now = Date.now();
   const hoursElapsed = (now - created) / (1000 * 60 * 60);
-  const original = 745;
+  const original = PUBLIC_PLAN.price; // single source of truth ($149)
 
   const tiers = [
     { maxHours: 1,  percent: 50, label: "50% off — you just saw your demo!", couponCode: "DEMO50" },
     { maxHours: 3,  percent: 40, label: "40% off your first month",           couponCode: "DEMO40" },
     { maxHours: 12, percent: 30, label: "30% off your first month",           couponCode: "DEMO30" },
     { maxHours: 24, percent: 20, label: "20% off your first month",           couponCode: "DEMO20" },
-    { maxHours: 48, percent: 10, label: "$50 off your first month",           couponCode: "DEMO10" },
+    { maxHours: 48, percent: 10, label: "10% off your first month",           couponCode: "DEMO10" },
   ];
 
   for (let i = 0; i < tiers.length; i++) {
@@ -91,43 +92,33 @@ const PLATFORM_COLORS: Record<string, string> = {
   X:         "bg-neutral-100 text-neutral-700",
 };
 
-function PlanComparisonTable({ signupUrl, liteUrl }: { signupUrl: string; liteUrl: string }) {
+function PlanComparisonTable({ signupUrl }: { signupUrl: string }) {
+  const price = formatPrice(PUBLIC_PLAN.price);
   return (
     <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-2xl overflow-hidden shadow-2xl">
       <div className="px-6 pt-6 pb-4 text-center">
         <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 mb-2">Get this every month</p>
-        <h3 className="text-2xl font-bold text-white">Pick your plan</h3>
-        <p className="text-neutral-400 text-sm mt-1">Same AI onboarding · Cancel anytime · Setup in 24h</p>
-      </div>
-
-      <div className="grid grid-cols-3 gap-0 px-6 pb-2 text-xs font-semibold uppercase tracking-wide">
-        <div className="text-neutral-500">What you get</div>
-        <div className="text-center text-neutral-300">Lite <span className="text-neutral-500 font-normal normal-case">$99/mo</span></div>
-        <div className="text-center text-primary-400">Full <span className="text-neutral-400 font-normal normal-case">$745/mo</span></div>
-      </div>
-
-      {[
-        { feature: "Social posts/month",    lite: "30",   full: "150",  highlight: true },
-        { feature: "Landing pages",         lite: "1",    full: "✓",    highlight: true },
-        { feature: "Platforms covered",     lite: "3",    full: "5",    highlight: false },
-        { feature: "Monthly report",        lite: "—",    full: "✓",    highlight: false },
-        { feature: "Priority support",      lite: "—",    full: "✓",    highlight: false },
-      ].map((row, i) => (
-        <div key={row.feature} className={`grid grid-cols-3 gap-0 px-6 py-3 ${i % 2 === 0 ? "bg-white/5" : ""}`}>
-          <span className="text-neutral-400 text-sm">{row.feature}</span>
-          <span className="text-center text-neutral-300 text-sm font-medium">{row.lite}</span>
-          <span className={`text-center text-sm font-bold ${row.highlight ? "text-primary-400" : "text-white"}`}>{row.full}</span>
+        <h3 className="text-2xl font-bold text-white">{PUBLIC_PLAN.name}</h3>
+        <div className="flex items-end justify-center gap-1 mt-2">
+          <span className="text-4xl font-bold text-white">{price}</span>
+          <span className="text-neutral-400 pb-1">/mo</span>
         </div>
-      ))}
+        <p className="text-neutral-400 text-sm mt-1">One interview · Cancel anytime · Setup in 24h</p>
+      </div>
 
-      <div className="grid grid-cols-2 gap-4 p-6 pt-4">
-        <Link href={liteUrl}
-          className="py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-center transition-colors text-sm">
-          Start Lite — $99/mo
-        </Link>
+      <div className="px-6 pb-2 space-y-2">
+        {PUBLIC_PLAN.features.map((feature) => (
+          <div key={feature} className="flex items-start gap-3 py-1.5">
+            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+            <span className="text-neutral-300 text-sm">{feature}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="p-6 pt-4">
         <Link href={signupUrl}
-          className="py-3.5 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl text-center transition-colors text-sm">
-          Go Full — $745/mo →
+          className="block w-full py-3.5 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl text-center transition-colors text-sm">
+          Get Started — {price}/mo →
         </Link>
       </div>
 
@@ -196,8 +187,7 @@ export default function DemoResultsPage() {
     );
   }
 
-  const signupUrl = `/sign-up?plan=full${discount?.couponCode ? `&coupon=${discount.couponCode}` : ""}&email=${encodeURIComponent(demo.email)}`;
-  const liteUrl  = `/sign-up?plan=lite&email=${encodeURIComponent(demo.email)}`;
+  const signupUrl = `/sign-up?plan=${PUBLIC_PLAN.id}${discount?.couponCode ? `&coupon=${discount.couponCode}` : ""}&email=${encodeURIComponent(demo.email)}`;
 
   return (
     <div className="min-h-screen bg-neutral-50 pb-24 sm:pb-0">
@@ -275,13 +265,13 @@ export default function DemoResultsPage() {
                 <TrendingUp className="w-5 h-5 text-primary-600" />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-neutral-900 text-sm">You just saw 5 sample posts.</p>
+                <p className="font-bold text-neutral-900 text-sm">You just saw a few sample posts.</p>
                 <p className="text-neutral-600 text-sm mt-0.5">
-                  Full gives <strong>{businessName}</strong> <strong className="text-primary-700">150 posts every month</strong> — that&apos;s a branded post every single day across every platform.
+                  Your subscription gives <strong>{businessName}</strong> <strong className="text-primary-700">{PUBLIC_PLAN.entitlements.socialPostsPerMonth} posts every month</strong> — written, designed, and auto-published across every platform.
                 </p>
                 <Link href={signupUrl}
                   className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold rounded-lg transition-colors">
-                  Get 150 Posts/Month <ArrowRight className="w-4 h-4" />
+                  Get {PUBLIC_PLAN.entitlements.socialPostsPerMonth} Posts/Month <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
@@ -299,7 +289,7 @@ export default function DemoResultsPage() {
               This demo was a single sample. A subscription delivers this — and much more — on autopilot every 30 days.
             </p>
           </div>
-          <PlanComparisonTable signupUrl={signupUrl} liteUrl={liteUrl} />
+          <PlanComparisonTable signupUrl={signupUrl} />
         </div>
 
       </main>

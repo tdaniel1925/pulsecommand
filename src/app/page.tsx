@@ -1,22 +1,37 @@
 import Link from "next/link";
 import {
   Check, Share2, Image as ImageIcon, Star, ChevronRight,
-  ArrowRight, Layout, Sparkles, Send, Zap
+  ArrowRight, Sparkles, Send, MessageSquare
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { PUBLIC_PLAN, formatPrice } from "@/lib/stripe";
+
+const PRICE = formatPrice(PUBLIC_PLAN.price); // single source of truth
 
 const deliverables = [
   {
+    icon: <MessageSquare className="w-7 h-7 text-primary-600" />,
+    iconBg: "bg-primary-50",
+    number: "1",
+    unit: "Interview",
+    label: "a quick one-time conversation about your business",
+    headline: "Tell Us About Your Business Once",
+    desc: "Answer a few questions about what you do, who you serve, and your voice. That's the only work on your end — from there the system takes over.",
+    accent: "border-primary-200",
+    tag: "One-time setup",
+    tagColor: "bg-primary-50 text-primary-700",
+  },
+  {
     icon: <Share2 className="w-7 h-7 text-primary-600" />,
     iconBg: "bg-primary-50",
-    number: "300",
+    number: "30",
     unit: "Social Posts",
-    label: "per month · Starter gets 30 · Growth gets 100",
+    label: "written for you every month",
     headline: "Always-On Social Presence",
-    desc: "Branded, platform-specific posts written by AI for every channel — Instagram, Facebook, LinkedIn, X, and Google Business. Each post is tailored to that platform's audience and tone, then auto-published on your schedule.",
+    desc: "Branded, platform-specific posts written by AI for every channel — Instagram, Facebook, LinkedIn, X, and TikTok. Each post is tailored to that platform's audience and tone, then published on your schedule.",
     accent: "border-primary-200",
-    tag: "5 platforms",
+    tag: "Every month",
     tagColor: "bg-primary-50 text-primary-700",
   },
   {
@@ -38,87 +53,31 @@ const deliverables = [
     unit: "Publishing",
     label: "directly to your connected accounts",
     headline: "Set It and Forget It",
-    desc: "Connect your accounts once and we publish straight to Instagram, Facebook, LinkedIn, X, and Google Business. No copy-paste, no manual scheduling — your content goes out automatically across every platform on your plan.",
+    desc: "Connect your accounts once and we publish straight to Instagram, Facebook, LinkedIn, X, and TikTok. No copy-paste, no manual scheduling, no approvals — your content goes out automatically across every platform.",
     accent: "border-purple-200",
     tag: "Hands-off",
     tagColor: "bg-purple-50 text-purple-700",
-  },
-  {
-    icon: <Layout className="w-7 h-7 text-primary-600" />,
-    iconBg: "bg-primary-50",
-    number: "∞",
-    unit: "Landing Pages",
-    label: "Starter gets 1 · Growth gets 3 · Pro is unlimited",
-    headline: "High-Converting Pages, Built by AI",
-    desc: "Describe your offer and AI builds a polished, conversion-focused landing page — published live at your own URL, ready to share. Perfect for promotions, lead capture, and campaigns.",
-    accent: "border-primary-200",
-    tag: "Published to your URL",
-    tagColor: "bg-primary-50 text-primary-700",
   },
 ];
 
 const testimonials = [
   {
-    quote: "We went from zero online presence to 100 branded posts a month — every one with a custom image, published automatically. I haven't logged into a scheduler since.",
+    quote: "We went from zero online presence to 30 branded posts a month — every one with a custom image, published automatically. I haven't logged into a scheduler since.",
     name: "James T.",
     role: "Business Owner",
     rating: 5,
   },
   {
-    quote: "The AI landing pages are the sleeper feature. I spun up a promo page in minutes and had it live on my own URL the same afternoon.",
+    quote: "I did one interview and never thought about social again. The posts sound like us and just show up across every platform.",
     name: "Priya K.",
-    role: "Brand Strategist",
+    role: "Founder",
     rating: 5,
   },
   {
-    quote: "It replaced our whole social workflow. Posts written for each platform, images included, auto-published across all of them. Unreal value.",
+    quote: "It replaced our whole social workflow. Posts written for each platform, images included, auto-published across all of them. Unreal value for the price.",
     name: "Sarah M.",
     role: "Marketing Director",
     rating: 5,
-  },
-];
-
-const plans = [
-  {
-    id: "starter",
-    name: "Auto Social",
-    blurb: "One interview. We post to your socials automatically.",
-    price: "$149",
-    highlight: true,
-    features: [
-      { icon: <Check className="w-4 h-4 text-green-500" />, text: "One quick interview about your business" },
-      { icon: <Share2 className="w-4 h-4 text-primary-500" />, text: "30 on-brand social posts/month" },
-      { icon: <ImageIcon className="w-4 h-4 text-accent-400" />, text: "AI image with every post" },
-      { icon: <Send className="w-4 h-4 text-purple-500" />, text: "Auto-published to your accounts — no approvals" },
-    ],
-  },
-  {
-    id: "growth",
-    name: "Growth",
-    blurb: "The agency replacement for growing businesses",
-    price: "$399",
-    highlight: true,
-    features: [
-      { icon: <Share2 className="w-4 h-4 text-primary-300" />, text: "100 social posts/month" },
-      { icon: <ImageIcon className="w-4 h-4 text-accent-300" />, text: "AI image with every post" },
-      { icon: <Send className="w-4 h-4 text-purple-400" />, text: "Auto-publish across all platforms" },
-      { icon: <Layout className="w-4 h-4 text-primary-300" />, text: "3 landing pages" },
-      { icon: <Zap className="w-4 h-4 text-amber-400" />, text: "Priority generation" },
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    blurb: "High-volume content for established brands",
-    price: "$749",
-    highlight: false,
-    features: [
-      { icon: <Share2 className="w-4 h-4 text-primary-500" />, text: "300 social posts/month" },
-      { icon: <ImageIcon className="w-4 h-4 text-accent-400" />, text: "AI image with every post" },
-      { icon: <Send className="w-4 h-4 text-purple-500" />, text: "Auto-publish across all platforms" },
-      { icon: <Layout className="w-4 h-4 text-primary-500" />, text: "Unlimited landing pages" },
-      { icon: <Zap className="w-4 h-4 text-amber-500" />, text: "Priority generation" },
-    ],
   },
 ];
 
@@ -145,7 +104,7 @@ export default function HomePage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500" />
               </span>
-              AI social posts + landing pages. One subscription.
+              One interview. Done-for-you social. One flat price.
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-neutral-900 tracking-tight mb-8">
               Your Social Media,{" "}
@@ -155,11 +114,11 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="text-xl text-neutral-600 mb-6 max-w-3xl mx-auto leading-relaxed">
-              BundledContent writes your social posts, creates a matching AI image for each one, and auto-publishes them to Instagram, Facebook, LinkedIn, X, and Google Business — plus AI-built landing pages on your own URL. Powered by AI. Starting at $149/mo.
+              Do one short interview about your business. After that, BundledContent writes your social posts, creates a matching AI image for each one, and auto-publishes them to Instagram, Facebook, LinkedIn, X, and TikTok — all for a flat {PRICE}/month.
             </p>
 
             <div className="flex flex-wrap justify-center gap-3 mb-10">
-              {["AI Social Posts", "AI Images", "Auto-Publish", "5 Platforms", "AI Landing Pages"].map((item) => (
+              {["One Interview", "AI Social Posts", "AI Images", "Auto-Publish", "5 Platforms"].map((item) => (
                 <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-neutral-200 rounded-full text-sm text-neutral-700 font-medium shadow-sm">
                   <Check className="w-3.5 h-3.5 text-green-500" /> {item}
                 </span>
@@ -167,13 +126,13 @@ export default function HomePage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/demo"
+              <Link href="/sign-up"
                 className="px-8 py-4 bg-accent-400 text-white font-bold rounded-lg hover:bg-accent-500 transition-all shadow-lg hover:shadow-xl text-lg">
-                Try Free Demo →
+                Get Started — {PRICE}/mo →
               </Link>
-              <Link href="#pricing"
+              <Link href="/demo"
                 className="px-8 py-4 bg-white text-neutral-700 border border-neutral-200 font-semibold rounded-lg hover:bg-neutral-50 transition-all shadow-sm hover:shadow-md">
-                See Plans →
+                Try Free Demo →
               </Link>
             </div>
             <p className="text-sm text-neutral-400 mt-4">No lock-in contracts. Cancel anytime. Setup in 24 hours.</p>
@@ -202,7 +161,7 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-neutral-900 mb-4">Everything Your Social Presence Needs. On Autopilot.</h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              Two products, fully automated: AI social posts with images that publish themselves, and AI landing pages live on your own URL.
+              One interview, then it runs itself: AI social posts with custom images that publish themselves to every platform.
             </p>
           </div>
 
@@ -245,31 +204,31 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 border border-primary-100 text-primary-700 text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" /> How It Works
             </div>
-            <h2 className="text-4xl font-bold text-neutral-900 mb-4">From Brand to Published in Three Steps</h2>
+            <h2 className="text-4xl font-bold text-neutral-900 mb-4">From Interview to Published in Three Steps</h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              Onboard once. After that, your content writes, designs, and publishes itself.
+              Do one interview. After that, your content writes, designs, and publishes itself.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                icon: <Sparkles className="w-6 h-6 text-primary-600" />,
+                icon: <MessageSquare className="w-6 h-6 text-primary-600" />,
                 step: "1",
-                title: "Tell Us About Your Brand",
-                desc: "A quick AI onboarding learns your voice, audience, and offers — then connect the social accounts you want us to publish to.",
+                title: "Do One Interview",
+                desc: "A quick AI interview learns your voice, audience, and offers — then connect the social accounts you want us to publish to.",
               },
               {
                 icon: <ImageIcon className="w-6 h-6 text-accent-500" />,
                 step: "2",
                 title: "AI Creates Posts + Images",
-                desc: "AI writes platform-specific posts and generates a fresh, on-brand image for each one. Need a landing page? Describe it and AI builds it.",
+                desc: "AI writes platform-specific posts and generates a fresh, on-brand image for each one — automatically, every month.",
               },
               {
                 icon: <Send className="w-6 h-6 text-purple-600" />,
                 step: "3",
                 title: "Auto-Published For You",
-                desc: "Your posts publish automatically to Instagram, Facebook, LinkedIn, X, and Google Business. Landing pages go live at your own URL.",
+                desc: "Your posts publish automatically to Instagram, Facebook, LinkedIn, X, and TikTok. No approvals, no scheduling, nothing to manage.",
               },
             ].map((s) => (
               <div key={s.step} className="bg-white rounded-2xl border border-neutral-200 p-7 shadow-sm">
@@ -287,64 +246,46 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing — single plan */}
       <section id="pricing" className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-neutral-900 mb-4">Pick Your Plan</h2>
+            <h2 className="text-4xl font-bold text-neutral-900 mb-4">One Simple Price</h2>
             <p className="text-lg text-neutral-600">
-              Same AI onboarding. Same quality. Upgrade anytime.
+              Everything included. No tiers, no add-ons, no surprises.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={
-                  plan.highlight
-                    ? "bg-neutral-900 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden border-2 border-primary-500 md:-mt-4"
-                    : "bg-white rounded-3xl p-8 border-2 border-neutral-200 shadow-sm"
-                }
-              >
-                {plan.highlight && (
-                  <>
-                    <div className="absolute top-4 right-4 bg-primary-500 text-white text-xs font-bold px-3 py-1 rounded-full">Most Popular</div>
-                    <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-                  </>
-                )}
-                <div className="relative">
-                  <div className="mb-6">
-                    <p className={`font-bold text-xl ${plan.highlight ? "text-white" : "text-neutral-900"}`}>BundledContent {plan.name}</p>
-                    <p className={`text-sm mt-1 ${plan.highlight ? "text-neutral-400" : "text-neutral-500"}`}>{plan.blurb}</p>
-                  </div>
-                  <div className="flex items-end gap-2 mb-1">
-                    <span className={`text-5xl font-bold ${plan.highlight ? "text-white" : "text-neutral-900"}`}>{plan.price}</span>
-                    <span className="text-neutral-400 text-lg pb-1">/month</span>
-                  </div>
-                  <p className={`text-xs mb-6 ${plan.highlight ? "text-neutral-500" : "text-neutral-400"}`}>14-day free trial · No credit card needed</p>
-                  <div className="space-y-3 mb-8">
-                    {plan.features.map(({ icon, text }) => (
-                      <div key={text} className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${plan.highlight ? "bg-neutral-800" : "bg-neutral-50 border border-neutral-100"}`}>{icon}</div>
-                        <span className={`text-sm ${plan.highlight ? "text-neutral-300" : "text-neutral-600"}`}>{text}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <Link
-                    href={`/sign-up?plan=${plan.id}`}
-                    className={
-                      plan.highlight
-                        ? "block w-full py-3.5 bg-white text-neutral-900 font-bold rounded-xl text-center hover:bg-primary-50 transition-colors text-base"
-                        : "block w-full py-3.5 bg-neutral-900 text-white font-bold rounded-xl text-center hover:bg-neutral-800 transition-colors text-base"
-                    }
-                  >
-                    Get Started — {plan.price}/mo <ArrowRight className="inline w-4 h-4 ml-1" />
-                  </Link>
-                  <p className={`text-center text-xs mt-3 ${plan.highlight ? "text-neutral-500" : "text-neutral-400"}`}>Setup begins within 24 hours.</p>
-                </div>
+          <div className="bg-neutral-900 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden border-2 border-primary-500">
+            <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+            <div className="relative">
+              <div className="mb-6">
+                <p className="font-bold text-xl text-white">BundledContent {PUBLIC_PLAN.name}</p>
+                <p className="text-sm mt-1 text-neutral-400">{PUBLIC_PLAN.description}</p>
               </div>
-            ))}
+              <div className="flex items-end gap-2 mb-1">
+                <span className="text-5xl font-bold text-white">{PRICE}</span>
+                <span className="text-neutral-400 text-lg pb-1">/month</span>
+              </div>
+              <p className="text-xs mb-6 text-neutral-500">14-day free trial · Cancel anytime</p>
+              <div className="space-y-3 mb-8">
+                {PUBLIC_PLAN.features.map((text) => (
+                  <div key={text} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 bg-neutral-800">
+                      <Check className="w-4 h-4 text-green-400" />
+                    </div>
+                    <span className="text-sm text-neutral-300">{text}</span>
+                  </div>
+                ))}
+              </div>
+              <Link
+                href="/sign-up"
+                className="block w-full py-3.5 bg-white text-neutral-900 font-bold rounded-xl text-center hover:bg-primary-50 transition-colors text-base"
+              >
+                Get Started — {PRICE}/mo <ArrowRight className="inline w-4 h-4 ml-1" />
+              </Link>
+              <p className="text-center text-xs mt-3 text-neutral-500">Setup begins within 24 hours.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -380,17 +321,17 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-4">Stop Managing Social Media.<br />Start Publishing on Autopilot.</h2>
           <p className="text-primary-100 text-lg mb-3">
-            AI writes your posts, designs the images, and publishes everywhere — plus landing pages on your own URL.
+            Do one interview. AI writes your posts, designs the images, and publishes everywhere — automatically.
           </p>
-          <p className="text-primary-200 text-sm mb-8">Starter $149/mo · Growth $399/mo · Pro $749/mo · No contracts.</p>
+          <p className="text-primary-200 text-sm mb-8">One flat plan · {PRICE}/mo · No contracts.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/demo"
+            <Link href="/sign-up"
               className="inline-flex items-center gap-2 px-8 py-4 bg-accent-400 text-white font-bold rounded-lg hover:bg-accent-500 transition-colors shadow-lg text-lg">
-              Try Free Demo <ChevronRight className="w-5 h-5" />
+              Get Started — {PRICE}/mo <ChevronRight className="w-5 h-5" />
             </Link>
-            <Link href="#pricing"
+            <Link href="/demo"
               className="inline-flex items-center gap-2 px-8 py-4 bg-white/15 border border-white/30 text-white font-bold rounded-lg hover:bg-white/25 transition-colors text-lg">
-              See Plans →
+              Try Free Demo →
             </Link>
           </div>
           <p className="text-primary-200 text-xs mt-4">No contracts. Cancel anytime. Setup within 24 hours.</p>

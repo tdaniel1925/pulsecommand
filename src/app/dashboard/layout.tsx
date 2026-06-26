@@ -5,6 +5,8 @@ import { LogoutButton } from "@/components/dashboard/LogoutButton";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import MobileMenuToggle from "@/components/dashboard/MobileMenuToggle";
 import { createClient } from "@/lib/supabase/server";
+import { resolveClientPlan, PLAN_SELECT } from "@/lib/plan";
+import { PUBLIC_PLAN, formatPrice } from "@/lib/stripe";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -13,13 +15,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { data: client } = user
     ? await supabase
         .from("clients")
-        .select("id, first_name, last_name, business_name")
+        .select(`id, first_name, last_name, business_name, ${PLAN_SELECT}`)
         .eq("user_id", user.id)
         .single()
     : { data: null };
 
   const displayName = client?.business_name ?? (`${client?.first_name ?? ""} ${client?.last_name ?? ""}`.trim() || "My Account");
   const initials = (client?.first_name?.[0] ?? client?.business_name?.[0] ?? "?").toUpperCase();
+  const plan = (client ? resolveClientPlan(client) : null) ?? PUBLIC_PLAN;
+  const planLabel = `${plan.name} · ${formatPrice(plan.price)}/mo`;
 
   return (
     <div className="flex h-screen bg-neutral-50 overflow-hidden">
@@ -43,7 +47,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-neutral-900 truncate">{displayName}</p>
-              <p className="text-xs text-neutral-400 truncate">$745/mo plan</p>
+              <p className="text-xs text-neutral-400 truncate">{planLabel}</p>
             </div>
             <LogoutButton />
           </div>
@@ -55,7 +59,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {/* Top bar */}
         <header className="bg-white border-b border-neutral-200 px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3 lg:hidden">
-            <MobileMenuToggle />
+            <MobileMenuToggle planLabel={planLabel} displayName={displayName} />
             <h1 className="text-sm sm:text-base font-semibold text-neutral-900">Dashboard</h1>
           </div>
           <h1 className="hidden lg:block text-base font-semibold text-neutral-900">Client Dashboard</h1>

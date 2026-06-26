@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { PUBLIC_PLAN, formatPrice } from "@/lib/stripe";
 
 export default function Footer() {
   return (
@@ -12,7 +13,7 @@ export default function Footer() {
               <Image src="/logo.png" alt="BundledContent" width={160} height={54} className="h-10 w-auto" />
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed">
-              AI social media on autopilot — posts, images, and auto-publishing across every platform, plus AI-built landing pages. Plans from $149/mo.
+              AI social media on autopilot — do one interview, and we write, design, and auto-publish your posts across every platform. {formatPrice(PUBLIC_PLAN.price)}/mo, flat.
             </p>
           </div>
 
@@ -23,7 +24,7 @@ export default function Footer() {
               <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">AI Social Posts</Link></li>
               <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">AI Images</Link></li>
               <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">Auto-Publishing</Link></li>
-              <li><Link href="/#what-you-get" className="hover:text-primary-400 transition-colors">AI Landing Pages</Link></li>
+              <li><Link href="/#how-it-works" className="hover:text-primary-400 transition-colors">How It Works</Link></li>
             </ul>
           </div>
 
@@ -59,11 +60,11 @@ export default function Footer() {
 
         <div className="border-t border-neutral-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-neutral-500">
-            © {new Date().getFullYear()} BundledContent. All rights reserved.
+            © {new Date().getFullYear()} BundledContent, a product of Docs2Video. All rights reserved.
           </p>
           <div className="flex gap-5 text-sm text-neutral-500">
-            <a href="mailto:support@bundledcontent.com" className="hover:text-neutral-300 transition-colors">Privacy Policy</a>
-            <a href="mailto:support@bundledcontent.com" className="hover:text-neutral-300 transition-colors">Terms of Service</a>
+            <Link href="/privacy" className="hover:text-neutral-300 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-neutral-300 transition-colors">Terms of Service</Link>
             <a href="mailto:support@bundledcontent.com" className="hover:text-neutral-300 transition-colors">Support</a>
           </div>
         </div>

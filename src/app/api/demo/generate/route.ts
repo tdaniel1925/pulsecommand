@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateJSON, DEFAULT_MODEL } from '@/lib/openrouter'
+import { PUBLIC_PLAN } from '@/lib/stripe'
 
 async function scanWebsite(website: string) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
@@ -95,7 +96,7 @@ export async function sendDemoNotification(
             <p style="color: #6b7280;">Your AI-generated sample content is live — social posts, a podcast intro, and an AI presenter video, all built specifically for your business.</p>
             <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 12px; padding: 16px; margin: 24px 0;">
               <p style="color: #92400e; font-weight: bold; margin: 0 0 4px;">⚡ 50% off — next 1 hour only</p>
-              <p style="color: #b45309; margin: 0; font-size: 14px;">Sign up in the next hour and get your first month for just $372.50 instead of $745.</p>
+              <p style="color: #b45309; margin: 0; font-size: 14px;">Sign up in the next hour and get your first month for just $${(PUBLIC_PLAN.price / 2).toFixed(2)} instead of $${PUBLIC_PLAN.price}.</p>
             </div>
             <a href="${resultsUrl}" style="display: block; background: #4f46e5; color: white; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; text-align: center; font-size: 16px; margin: 0 0 12px;">
               View My Sample Content →

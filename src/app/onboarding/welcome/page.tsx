@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Zap, Star, ArrowRight, Share2, Globe, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Check, Zap, Star, ArrowRight, Share2, Image as ImageIcon, Loader2 } from "lucide-react";
 import OnboardingNav from "@/components/OnboardingNav";
 
 const included = [
   { icon: <Share2 className="w-4 h-4 text-primary-600" />, text: "AI social posts across your connected channels" },
   { icon: <ImageIcon className="w-4 h-4 text-purple-600" />, text: "On-brand AI images for every post" },
-  { icon: <Globe className="w-4 h-4 text-teal-600" />, text: "AI-built landing pages on your domain" },
 ];
 
 // New focused flow: account → brand setup (with website scan) → live.
@@ -65,7 +64,7 @@ export default function WelcomePage() {
     {
       num: 3,
       title: "You're Live",
-      desc: "We connect your social accounts and start generating on-brand posts and landing pages.",
+      desc: "We connect your social accounts and start generating on-brand posts automatically.",
       done: hasBrandAssets,
       href: hasBrandAssets ? "/dashboard" : null,
       cta: hasBrandAssets ? "Go to Dashboard" : null,
@@ -172,7 +171,7 @@ export default function WelcomePage() {
                   </div>
                   <div>
                     <p className="font-bold text-sm">BundledContent</p>
-                    <p className="text-neutral-400 text-xs">AI Social Posts & Landing Pages</p>
+                    <p className="text-neutral-400 text-xs">AI Social Posts on Autopilot</p>
                   </div>
                 </div>
 

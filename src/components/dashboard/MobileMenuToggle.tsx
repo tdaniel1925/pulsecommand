@@ -7,7 +7,7 @@ import { Menu, X } from "lucide-react";
 import DashboardNav from "./DashboardNav";
 import { LogoutButton } from "./LogoutButton";
 
-export default function MobileMenuToggle() {
+export default function MobileMenuToggle({ planLabel, displayName }: { planLabel?: string; displayName?: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -67,8 +67,8 @@ export default function MobileMenuToggle() {
                   <span className="text-xs font-bold text-white">U</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-neutral-900 truncate">Account</p>
-                  <p className="text-xs text-neutral-400 truncate">$745/mo plan</p>
+                  <p className="text-sm font-semibold text-neutral-900 truncate">{displayName ?? "Account"}</p>
+                  {planLabel && <p className="text-xs text-neutral-400 truncate">{planLabel}</p>}
                 </div>
                 <LogoutButton />
               </div>

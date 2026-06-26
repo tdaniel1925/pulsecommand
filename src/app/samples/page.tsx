@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Share2, ArrowRight, Star, Eye, Heart, MessageCircle,
-  Loader2, Sparkles, Layout, ExternalLink
+  Loader2, Sparkles
 } from "lucide-react";
 
 // Brand icons not in this version of lucide-react
@@ -311,57 +311,6 @@ export default function SamplesPage() {
           <p className="text-center text-neutral-400 text-sm mt-10">
             Every post is written for its platform, paired with a custom AI image, and auto-published to your connected accounts.
           </p>
-        </div>
-      </section>
-
-      {/* ── Section: Landing Pages ── */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeader
-            icon={<Layout className="w-5 h-5 text-primary-600" />}
-            iconBg="bg-primary-100"
-            label="AI Landing Pages"
-            title="High-Converting Pages, Built by AI"
-            desc="Describe your offer and AI builds a polished, conversion-focused landing page — published live at your own URL, ready to share for promotions, lead capture, and campaigns."
-            count="Up to unlimited"
-            countColor="bg-primary-50 text-primary-700 border-primary-200"
-          />
-
-          <div className="mt-12 max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl border border-neutral-200 shadow-lg overflow-hidden">
-              {/* Browser chrome */}
-              <div className="bg-neutral-100 border-b border-neutral-200 px-4 py-3 flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-red-400" />
-                <span className="w-3 h-3 rounded-full bg-yellow-400" />
-                <span className="w-3 h-3 rounded-full bg-green-400" />
-                <span className="ml-3 text-xs text-neutral-500 bg-white border border-neutral-200 rounded-md px-3 py-1 flex-1 truncate">
-                  yourbrand.com/p/spring-roof-special
-                </span>
-              </div>
-              {/* Landing page mock */}
-              <div className="bg-gradient-to-br from-primary-600 via-primary-500 to-accent-400 px-8 py-12 text-white text-center">
-                <p className="text-primary-100 text-xs font-bold uppercase tracking-widest mb-4">Oakridge Roofing · Limited Spring Offer</p>
-                <h3 className="text-3xl font-bold leading-tight mb-3">Free Roof Inspection — This Month Only</h3>
-                <p className="text-primary-100 text-sm leading-relaxed max-w-md mx-auto mb-6">Book before May 31st and we&apos;ll waive the $199 inspection fee. Thermal imaging included — catch problems before they cost you.</p>
-                <div className="inline-block px-6 py-3 bg-white text-primary-700 font-bold rounded-lg text-sm">Claim My Free Inspection →</div>
-              </div>
-              <div className="px-8 py-5 grid grid-cols-3 gap-4 text-center">
-                {[
-                  { v: "20+ yrs", l: "Experience" },
-                  { v: "48 hrs", l: "Turnaround" },
-                  { v: "5,000+", l: "Roofs Done" },
-                ].map((s) => (
-                  <div key={s.l}>
-                    <p className="text-2xl font-bold text-neutral-900">{s.v}</p>
-                    <p className="text-xs text-neutral-500">{s.l}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <p className="text-center text-neutral-400 text-sm mt-6 flex items-center justify-center gap-1.5">
-              <ExternalLink className="w-3.5 h-3.5" /> Published live at your own /p/ URL — ready to share instantly.
-            </p>
-          </div>
         </div>
       </section>
 

@@ -1,4 +1,4 @@
-import { PLANS } from '@/lib/stripe'
+import { ACTIVE_PLANS } from '@/lib/stripe'
 import PricingClient from './PricingClient'
 
 export default function PricingPage() {
@@ -10,16 +10,16 @@ export default function PricingPage() {
           Simple, transparent pricing
         </h1>
         <p className="text-xl text-neutral-500">
-          Start free. Upgrade when you&apos;re ready.
+          One plan. Everything included. Cancel anytime.
         </p>
       </div>
 
-      {/* Plans */}
-      <PricingClient plans={PLANS} />
+      {/* Plan */}
+      <PricingClient plans={ACTIVE_PLANS} />
 
       {/* Footer */}
       <div className="text-center py-8 border-t border-neutral-100">
-        <p className="text-sm text-neutral-400">&copy; 2025 BundledContent</p>
+        <p className="text-sm text-neutral-400">&copy; {new Date().getFullYear()} BundledContent</p>
       </div>
     </div>
   )

@@ -29,7 +29,7 @@ const timeline = [
   {
     year: "Today",
     title: "BundledContent is Born",
-    desc: "The result is BundledContent — AI that writes your social posts, designs a custom image for each one, and auto-publishes across every platform, plus AI-built landing pages on your own URL. One monthly subscription. Every channel covered. Real strategy behind every post.",
+    desc: "The result is BundledContent — AI that writes your social posts, designs a custom image for each one, and auto-publishes across every platform. One monthly subscription. Every channel covered. Real strategy behind every post.",
   },
 ];
 
@@ -44,7 +44,7 @@ const values = [
     icon: <BarChart3 className="w-5 h-5 text-primary-600" />,
     bg: "bg-primary-50",
     title: "Built to Convert",
-    desc: "We're obsessed with output that performs. Posts written for each platform, images that stop the scroll, and landing pages designed to turn visitors into leads.",
+    desc: "We're obsessed with output that performs. Posts written for each platform, and images that stop the scroll.",
   },
   {
     icon: <Heart className="w-5 h-5 text-rose-500" />,
@@ -91,7 +91,7 @@ export default function AboutPage() {
               </span>
             </h1>
             <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
-              BundledContent is AI social media on autopilot — posts, custom images, and auto-publishing across every platform, plus AI-built landing pages on your own URL. Behind it is a husband and wife team with decades of broadcast, brand, and marketing experience who figured out how to make AI content creation work at real scale.
+              BundledContent is AI social media on autopilot — posts, custom images, and auto-publishing across every platform. Behind it is a husband and wife team with decades of broadcast, brand, and marketing experience who figured out how to make AI content creation work at real scale.
             </p>
           </div>
 
@@ -271,7 +271,7 @@ export default function AboutPage() {
           <p className="text-2xl font-semibold text-neutral-800 italic max-w-2xl mx-auto mb-6">
             &ldquo;Working with Trent and Sella feels like having a full marketing team in your corner — at a fraction of the cost. They actually care about your brand.&rdquo;
           </p>
-          <p className="text-neutral-500 font-medium">— James T., Business Owner · Growth plan client since 2024</p>
+          <p className="text-neutral-500 font-medium">— James T., Business Owner · client since 2024</p>
         </div>
       </section>
 
