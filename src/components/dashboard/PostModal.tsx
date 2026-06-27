@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { X, Monitor, Pencil, Loader2, Check } from "lucide-react";
+import { X, Monitor, Pencil, Loader2, Check, Send, Clock } from "lucide-react";
 
 // ─── Platform config ──────────────────────────────────────────────────────────
 
@@ -209,6 +209,10 @@ export function PostModal({ post, onClose }: PostModalProps) {
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [scheduleAt, setScheduleAt] = useState("");
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Reset the active tab + edit state to the first platform whenever the post changes.
   // Adjusting state during render avoids the extra render an effect would cause.
@@ -218,6 +222,30 @@ export function PostModal({ post, onClose }: PostModalProps) {
     setActiveTab(post.platforms?.length ? post.platforms[0] : "");
     setEditing(false);
     setSaved(false);
+    setShowSchedule(false);
+    setScheduleAt("");
+    setActionError(null);
+  }
+
+  async function publishOrSchedule(opts: { publishNow?: boolean; scheduledFor?: string }) {
+    if (!post) return;
+    setPublishing(true);
+    setActionError(null);
+    try {
+      const res = await fetch("/api/dashboard/schedule-post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id, ...opts }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Could not complete that");
+      router.refresh();
+      onClose();
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setPublishing(false);
+    }
   }
 
   async function saveCaption() {
@@ -363,6 +391,51 @@ export function PostModal({ post, onClose }: PostModalProps) {
             )}
           </div>
         </div>
+
+        {/* Action footer — publish or schedule a not-yet-published post */}
+        {post.status !== "published" && (
+          <div className="flex-shrink-0 border-t border-neutral-100 px-5 py-3 space-y-2">
+            {actionError && <p className="text-xs text-red-600">{actionError}</p>}
+            {showSchedule ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="datetime-local"
+                  value={scheduleAt}
+                  onChange={(e) => setScheduleAt(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-neutral-200 rounded-lg text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                <button
+                  onClick={() => scheduleAt && publishOrSchedule({ scheduledFor: new Date(scheduleAt).toISOString() })}
+                  disabled={publishing || !scheduleAt}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                >
+                  {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Clock className="w-4 h-4" />} Schedule
+                </button>
+                <button onClick={() => setShowSchedule(false)} className="px-2 py-2 text-sm text-neutral-500 hover:text-neutral-800">Cancel</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => publishOrSchedule({ publishNow: true })}
+                  disabled={publishing}
+                  className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-primary-600 rounded-xl hover:bg-primary-700 disabled:opacity-60"
+                >
+                  {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Publish now
+                </button>
+                <button
+                  onClick={() => setShowSchedule(true)}
+                  disabled={publishing}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-neutral-700 border border-neutral-200 rounded-xl hover:bg-neutral-50 disabled:opacity-60"
+                >
+                  <Clock className="w-4 h-4" /> Schedule
+                </button>
+              </div>
+            )}
+            <p className="text-[11px] text-neutral-400 text-center">
+              Publishing sends this to your connected accounts immediately.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
